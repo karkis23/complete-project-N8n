@@ -1,4 +1,4 @@
-import { RefreshCcw, Bell, Pause, Play } from 'lucide-react';
+import { RefreshCcw, Bell, Pause, Play, Moon, Sun } from 'lucide-react';
 
 interface HeaderProps {
   title: string;
@@ -7,13 +7,15 @@ interface HeaderProps {
   isPaused?: boolean;
   marketData: any;
   engineHealth: any;
+  theme?: 'light' | 'dark';
+  onToggleTheme?: () => void;
   onRefresh: () => void;
   onTogglePolling: () => void;
 }
 
 export default function Header({
   title, subtitle, loading, isPaused,
-  marketData, engineHealth, onRefresh, onTogglePolling
+  marketData, engineHealth, theme, onToggleTheme, onRefresh, onTogglePolling
 }: HeaderProps) {
   const isMarketOpen = marketData?.marketOpen;
   const isEngineOnline = engineHealth?.online === true;
@@ -91,6 +93,14 @@ export default function Header({
           title="Refresh data"
         >
           <RefreshCcw size={14} />
+        </button>
+
+        <button 
+          className="icon-btn" 
+          onClick={onToggleTheme}
+          title={theme === 'light' ? "Switch to dark mode" : "Switch to light mode"}
+        >
+          {theme === 'light' ? <Moon size={14} /> : <Sun size={14} />}
         </button>
 
         <button className="icon-btn" title="Notifications">
