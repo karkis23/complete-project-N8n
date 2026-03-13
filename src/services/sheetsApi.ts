@@ -1,34 +1,30 @@
-// ============================================================
-// GOOGLE SHEETS API SERVICE
-// Reads live data from your actual trading Google Sheet
-// Sheet ID: 1aTMH5Yz28X_NA6lZgtjQzc7jlu9hiAPVVuf1ASTBQoU
-//
-// Uses public CSV export — to enable:
-//   1. Open your Google Sheet
-//   2. File → Share → Change to "Anyone with the link can VIEW"
-//   3. Done. No API key needed.
-// ============================================================
+/**
+ * GOOGLE SHEETS & EXTERNAL API SERVICE
+ * 
+ * Data ingestion layer for the Zenith environment.
+ * Consumes live signals, trade history, and active positions from Google Sheets (CSV).
+ * Integrates with TradingView Scanner for live market indices and Python engine health.
+ */
 
 import axios from 'axios';
 
-// Your Google Sheet ID (Dhan Signal Sheet)
+/** Target Google Sheet ID (Verified Dhan Signal Sheet) */
 const SHEET_ID = '1aTMH5Yz28X_NA6lZgtjQzc7jlu9hiAPVVuf1ASTBQoU';
 
-// Sheet GIDs from your workflow
+/** Internal GID mapping for relevant sheet tabs */
 const GID = {
-    signals: 0,                 // Dhan_Signals (Same for both usually)
+    signals: 0,                 // Dhan_Signals
     activeTrades: 773018112,    // Dhan_Active_Trades
     tradeSummary: 2086062684,   // Dhan_Trade_Summary
 };
 
-// TradingView scanner for live prices
+/** TradingView Scanner Endpoint for Indian Equity */
 const TV_SCANNER = 'https://scanner.tradingview.com/india/scan';
 
-// ============================================================
-// Timestamp Parser
-// Sheet stores dates as: "26/2/2026, 6:39:48 pm"  (Indian locale)
-// new Date() cannot parse this → "Invalid Date" everywhere
-// ============================================================
+/**
+ * Normalizes Indian Locale timestamps from Google Sheets to ISO 8601.
+ * Handles "DD/MM/YYYY, HH:MM:SS am/pm" formats.
+ */
 function parseSheetTimestamp(raw: string): string {
     if (!raw) return '';
     try {

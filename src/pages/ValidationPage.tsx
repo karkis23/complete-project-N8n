@@ -144,24 +144,24 @@ export default function ValidationPage() {
                         <FileText size={15} color="var(--accent-light)" />
                         <span className="section-title">Signal Performance Log</span>
                     </div>
-                    <span className="section-meta">{analyzed.length} entries</span>
+                    <span className="section-meta">Showing all {analyzed.length} entries</span>
                 </div>
-                <div style={{ overflowX: 'auto' }}>
-                    <table className="data-table">
-                        <thead>
+                <div style={{ overflowX: 'auto', maxHeight: '600px', overflowY: 'auto' }}>
+                    <table className="data-table" style={{ borderCollapse: 'separate', borderSpacing: 0 }}>
+                        <thead style={{ position: 'sticky', top: 0, zIndex: 10, background: 'var(--bg-surface)' }}>
                             <tr>
-                                <th style={{ width: 40 }} />
-                                <th>Time</th>
-                                <th>Direction</th>
-                                <th>Entry Price</th>
-                                <th>Current</th>
-                                <th>Move</th>
-                                <th>Result</th>
-                                <th>Quality</th>
+                                <th style={{ width: 40, borderBottom: '1px solid var(--border)' }} />
+                                <th style={{ borderBottom: '1px solid var(--border)' }}>Time</th>
+                                <th style={{ borderBottom: '1px solid var(--border)' }}>Direction</th>
+                                <th style={{ borderBottom: '1px solid var(--border)' }}>Entry Price</th>
+                                <th style={{ borderBottom: '1px solid var(--border)' }}>Current</th>
+                                <th style={{ borderBottom: '1px solid var(--border)' }}>Move</th>
+                                <th style={{ borderBottom: '1px solid var(--border)' }}>Result</th>
+                                <th style={{ borderBottom: '1px solid var(--border)' }}>Quality</th>
                             </tr>
                         </thead>
                         <tbody>
-                            {analyzed.slice(0, 20).map((a, i) => (
+                            {analyzed.map((a, i) => (
                                 <Fragment key={i}>
                                     <tr onClick={() => setExpandedRow(expandedRow === i ? null : i)}
                                         style={{ cursor: 'pointer' }}>
@@ -222,7 +222,7 @@ export default function ValidationPage() {
                                                         { label: 'Confidence', value: `${a.confidence}%` },
                                                         { label: 'PCR', value: a.putCallRatio?.toFixed(2) },
                                                         { label: 'Mode', value: a.engineMode },
-                                                        { label: 'Price Delta', value: a.diff.toFixed(1) }
+                                                        { label: 'Price Move', value: `${a.diff > 0 ? '+' : ''}${a.diff.toFixed(1)} (${a.pct.toFixed(2)}%)` }
                                                     ].map(item => (
                                                         <div key={item.label} style={{
                                                             padding: '10px 12px', background: 'var(--bg-elevated)',

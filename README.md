@@ -4,7 +4,7 @@ Institutional-grade automated NIFTY trading ecosystem combining **Zenith Midnigh
 
 ## 📁 System Architecture
 
-*   **/api**: 🧠 **Intelligence Engine** (Python 3.12 FastAPI + XGBoost + Market Vectors)
+*   **/backend**: 🧠 **Intelligence Engine** (Python 3.12 FastAPI + XGBoost + Market Vectors)
 *   **/src**: 🖥️ **Terminal Interface** (React 18 + Vite + TypeScript + Zenith Professional UI)
 *   **/n8n**: 🎡 **Operational Matrix** (Workflow orchestration & persistence)
 *   **/docs**: 📚 **System Archive** (Specifications, Handbooks, and Operational Guides)
@@ -14,7 +14,7 @@ Institutional-grade automated NIFTY trading ecosystem combining **Zenith Midnigh
 
 1.  **Initialize Intelligence**: Launch the inference server with automated environment isolation:
     ```powershell
-    cd api
+    cd backend
     ./start_server.bat
     ```
 2.  **Activate Operational Matrix**: Import the `NIFTY AI Engine v4.0 [TEST]` workflow into your n8n instance.
@@ -28,7 +28,7 @@ Institutional-grade automated NIFTY trading ecosystem combining **Zenith Midnigh
 
 *   [**Intelligence Architecture**](./docs/guides/PYTHON_AI_MODEL_ARCHITECTURE.md)
 *   [**Terminal Handbook**](./docs/PROJECT_DOCUMENT.md)
-*   [**Protocol Manual**](./AGENT_DOCUMENT.md)
+*   [**Protocol Manual**](./docs/AGENT_DOCUMENT.md)
 *   [**Operations Guide**](./docs/guides/LOCAL_AI_OPERATIONS_GUIDE.md)
 
 ---
