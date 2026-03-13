@@ -68,8 +68,8 @@ You do not need to repeat Phase 1. Every morning before 09:15 AM IST, follow thi
 1. Open your browser and go to: `http://localhost:8000/health`
 2. You should see `{"status": "healthy", "engine_mode": "RULES_FALLBACK"}`.
 
-### Step 3: Run n8n in Parallel
-As configured in `docs/guides/AI_ENGINE_SETUP_GUIDE.md`, your live v3.0 n8n workflow trades normally. Your *copied* v4.0 n8n workflow executes the HTTP Request node targeting `http://localhost:8000/api/predict` and logs the AI output.
+### Step 3: Run the Primary Workflow
+Your main n8n workflow now executes the HTTP Request node targeting `http://localhost:8000/api/predict`. All trading decisions and logging are now handled by this Python-driven pipeline. 
 
 ---
 
@@ -143,4 +143,8 @@ You can do this using Environment Variables:
 4. Stop `start_server.bat` and restart it.
 5. You will see a message in the console: `"⚠️ FORCE_RULES=true detected. Bypassing AI model..."`
 
+
 When you want the AI back, simply change `true` to `false` in that file and restart the server.
+
+---
+*Version 4.2.0 | Primary Python Operations | Last Updated: 12 March 2026*

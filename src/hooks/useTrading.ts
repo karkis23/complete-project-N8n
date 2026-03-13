@@ -1,7 +1,9 @@
-// ============================================================
-// useTrading Hook — Live data polling from Google Sheets
-// Auto-refreshes every 30s during market hours, 5min otherwise
-// ============================================================
+/**
+ * TRADING DATA HOOK
+ * 
+ * Central state management for live trading data. 
+ * Orchestrates polling from Google Sheets and live engine health diagnostics.
+ */
 
 import { useState, useEffect, useCallback, useRef } from 'react';
 import {
@@ -11,20 +13,21 @@ import {
     type MarketSnapshot, type TradeStats, type EngineHealth
 } from '../services/sheetsApi';
 
+/** Unified state object for the trading environment */
 export interface TradingState {
-    signals: LiveSignal[];
-    activeTrades: ActiveTrade[];
-    tradeSummary: TradeSummary[];
-    marketData: MarketSnapshot | null;
-    stats: TradeStats | null;
-    engineHealth: EngineHealth | null;
-    loading: boolean;
-    error: string | null;
-    lastRefresh: Date | null;
-    isLive: boolean;
-    refresh: () => void;
-    isPaused: boolean;
-    togglePolling: () => void;
+    signals: LiveSignal[];        // Recent engine signals
+    activeTrades: ActiveTrade[];  // Currently open positions
+    tradeSummary: TradeSummary[]; // Historical performance ledger
+    marketData: MarketSnapshot | null; // Nifty LTP and VIX
+    stats: TradeStats | null;      // Computed analytics (Win rate, PnL, etc)
+    engineHealth: EngineHealth | null; // Python Engine status
+    loading: boolean;             // Loading state indicator
+    error: string | null;         // Error messaging
+    lastRefresh: Date | null;     // Timestamp of last success
+    isLive: boolean;              // True if market is currently open
+    refresh: () => void;          // Manual refresh trigger
+    isPaused: boolean;            // True if auto-polling is disabled
+    togglePolling: () => void;    // Toggle auto-refresh on/off
 }
 
 export function useTrading(): TradingState {

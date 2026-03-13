@@ -95,19 +95,19 @@ export default function SignalsPage() {
 
             {/* Table */}
             <div className="card" style={{ overflow: 'hidden' }}>
-                <div style={{ overflowX: 'auto' }}>
-                    <table className="data-table">
-                        <thead>
+                <div style={{ overflowX: 'auto', maxHeight: '600px', overflowY: 'auto' }}>
+                    <table className="data-table" style={{ borderCollapse: 'separate', borderSpacing: 0 }}>
+                        <thead style={{ position: 'sticky', top: 0, zIndex: 10, background: 'var(--bg-surface)' }}>
                             <tr>
-                                <th style={{ width: 40 }} />
-                                <th>Time</th>
-                                <th>Direction</th>
-                                <th>Confidence</th>
-                                <th>Spot Price</th>
-                                <th>RSI</th>
-                                <th>ADX</th>
-                                <th>Regime</th>
-                                <th>Mode</th>
+                                <th style={{ width: 40, borderBottom: '1px solid var(--border)' }} />
+                                <th style={{ borderBottom: '1px solid var(--border)' }}>Time</th>
+                                <th style={{ borderBottom: '1px solid var(--border)' }}>Direction</th>
+                                <th style={{ borderBottom: '1px solid var(--border)' }}>Confidence</th>
+                                <th style={{ borderBottom: '1px solid var(--border)' }}>Spot Price</th>
+                                <th style={{ borderBottom: '1px solid var(--border)' }}>RSI</th>
+                                <th style={{ borderBottom: '1px solid var(--border)' }}>ADX</th>
+                                <th style={{ borderBottom: '1px solid var(--border)' }}>Regime</th>
+                                <th style={{ borderBottom: '1px solid var(--border)' }}>Mode</th>
                             </tr>
                         </thead>
                         <tbody>

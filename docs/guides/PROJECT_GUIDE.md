@@ -1,4 +1,4 @@
-# 📘 NIFTY Options Trading Bot — Complete Project Guide (v4.0 AI)
+# 📘 NIFTY Options Trading Bot — Complete Project Guide (v4.2.0)
 
 ## Project Overview
 
@@ -69,11 +69,10 @@ The logic no longer lives in n8n. You must run the local server:
 2. Run `./start_server.bat`.
 3. Go to `http://localhost:8000/health` to confirm the engine is in `RULES_FALLBACK` mode.
 
-### Step 2: Set Up the AI Dataset Sheet
-The AI requires more data than the old version.
-1. Use the new dedicated sheet: `1NILZ2uOrbBMQ1sw...`
-2. Ensure the headers include: `gammaExposure`, `ivSkew`, `candlePatterns`, `PA_Type`, `MACD_status`.
-3. The dashboard reads directly from this sheet via CSV export.
+### Step 2: Configure the Primary Workflow
+1. Use the main v4.0 workflow export: `n8n/workflows/NEWN8NFINAL.JSON`.
+2. This workflow replaces all previous v3.0 logic.
+3. Ensure the HTTP Request node targets `http://localhost:8000/api/predict`.
 
 ### Step 3: Run the Dashboard
 ```bash
@@ -126,4 +125,5 @@ If the AI is behaving weirdly during a news event:
 | **Angel SmartAPI** | https://smartapi.angelbroking.com |
 
 ---
-*Version 4.0.0 | AI Signal Engine v4.0 | Last Updated: 09 March 2026*
+---
+*Version 4.2.0 | Primary Python Signal Engine | Last Updated: 12 March 2026*
