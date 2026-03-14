@@ -3,6 +3,22 @@
 
 ---
 
+## 🖥️ Our Machine: Acer Aspire A715-79G
+
+| Component | Specification | Grade |
+|-----------|--------------|-------|
+| **Model** | Acer Aspire A715-79G | — |
+| **CPU** | Intel Core i5-13420H (13th Gen, 2.10 GHz base / 4.6 GHz boost) | ⭐⭐⭐⭐⭐ |
+| **CPU Cores** | 8 Performance cores + 4 Efficiency cores = 12 logical threads | ⭐⭐⭐⭐⭐ |
+| **RAM** | 16 GB DDR4 (15.7 GB usable) | ⭐⭐⭐⭐⭐ |
+| **GPU** | NVIDIA GeForce RTX 2050 (CUDA-enabled, 4 GB VRAM) | ⭐⭐⭐⭐ |
+| **OS** | Windows 11, 64-bit, x64-based | ✅ Perfect |
+
+### ✅ Overall Project Verdict: EXCEPTIONAL — Capable of ALL three phases
+This machine is not just adequate — it is genuinely powerful for every phase of this project, **including the future LSTM deep learning phase**. No hardware upgrades will ever be needed for Zenith Intelligence as designed.
+
+---
+
 ## Overview: Three Phases, Three Different Requirements
 
 The hardware requirements are NOT fixed. They change depending on which phase of the project you are in:
