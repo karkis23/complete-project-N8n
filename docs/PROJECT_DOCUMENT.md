@@ -28,7 +28,7 @@
 | **Logic Orchestrator** | n8n | Operational pipeline management & state persistence |
 | **Execution Gateway** | Dhan HQ API | Strategic market engagement & order management |
 | **Market Data Feed** | Angel One SmartAPI | Real-time tick & greeks ingestion |
-| **Persistent Ledger** | Google Sheets v4.2 | High-fidelity trade & signal auditing |
+| **Persistent Ledger** | Supabase (PostgreSQL) | High-fidelity trade & signal auditing (migrated from Google Sheets v4.2) |
 | **Terminal Interface** | React 18, Vite, TS | Professional monitoring & system control hub |
 
 ---
@@ -68,7 +68,7 @@ graph TD
     J -->|JSON Signal| D
     D -->|Signal Response| A
     
-    A --> K[Google Sheets Logging]
+    A --> K[Supabase PostgreSQL Logging]
     A --> L[Dhan Order Execution]
     K --> M[React Dashboard]
 ```
@@ -85,14 +85,14 @@ graph TD
 │                                         ┌─────────────────────┐     │
 │                                         │ Log Active Trade     │     │
 │                                         │ Log Trade Summary    │     │
-│                                         │ → Google Sheets      │     │
+│                                         │ → Supabase (PostgreSQL)│     │
 │                                         └─────────────────────┘     │
 └─────────────────────────────────────────────────────────────────────┘
                                       │
                           ┌───────────┴──────────┐
                           ↓                      ↓
                ┌─────────────────┐    ┌──────────────────────┐
-               │  Google Sheets  │    │  React Dashboard      │
+               │  Supabase DB    │    │  React Dashboard      │
                │  (3 sheets)     │←──→│  (localhost:5173)     │
                └─────────────────┘    └──────────────────────┘
 ```
@@ -142,7 +142,7 @@ Python calculates **57 features** (RSI, GEX, IV Skew, etc.) and runs the **XGBoo
 Python returns a JSON signal with `finalSignal`, `confidence`, and `aiInsights`.
 
 ### Step 5 — Institutional Logging
-n8n logs the 57-feature decision package to the Google Sheet dataset.
+n8n logs the 57-feature decision package to **Supabase PostgreSQL** (`signals` table).
 
 ### Step 6 — Order Execution
 If BUY signal, n8n places a Bracket Order on Dhan API.
@@ -190,9 +190,10 @@ All order IDs + prices → Log Active Trade → Dhan_Active_Trades sheet
 
 | File | Description |
 |---|---|
-| `n8n/workflows/NEWN8NFINAL.JSON` | **Use this** — latest workflow with all fixes applied |
-| `n8n/workflows/n8n_workflow.json` | Older version (may have bugs) |
-| `docs/guides/WORKFLOW_FIX_GUIDE.md` | Step-by-step instructions to apply all 9+ bug fixes |
+| `n8n/workflows/NEWN8NFINAL.JSON` | Legacy workflow with Google Sheets logging (backup) |
+| `n8n/workflows/NEWN8NFINAL_SUPABASE.JSON` | **Use this** — latest workflow with Supabase persistence |
+| `n8n/workflows/exit_order_monitor_supabase.json` | **Use this** — exit monitor with Supabase |
+| `docs/guides/SUPABASE_MIGRATION_GUIDE.md` | Complete migration documentation |
 
 ### Workflow Node Map
 
@@ -471,10 +472,12 @@ All order IDs + prices → Log Active Trade → Dhan_Active_Trades sheet
 
 ---
 
-## 8. Google Sheets Schema
+## 8. Database Schema (Supabase PostgreSQL)
 
-**Sheet ID:** `1aTMH5Yz28X_NA6lZgtjQzc7jlu9hiAPVVuf1ASTBQoU`
-**Access:** Must be set to "Anyone with the link can view"
+> **Migrated from Google Sheets on 20 March 2026.** See [SUPABASE_MIGRATION_GUIDE.md](./guides/SUPABASE_MIGRATION_GUIDE.md) for full details.
+>
+> **Supabase Project:** Configure via n8n Supabase API credential
+> **Schema File:** `n8n/supabase_schema.sql`
 
 ### Sheet 1: Dhan_Signals (gid=0)
 
