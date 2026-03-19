@@ -21,8 +21,9 @@ interface BacktestResult {
 function runRealBacktest(config: any, signals: any[], tradeSummary: any[]): BacktestResult {
     let equity = config.startCapital || 100000;
     const initial = equity;
-    const curve: { date: string; equity: number }[] = [];
     const dayMap: Record<string, number> = {};
+    // Track the running equity at the END of each date for the curve
+    const dayEquityMap: Record<string, number> = {};
     let wins = 0, losses = 0, totalWin = 0, totalLoss = 0;
     let maxEq = equity, maxDD = 0;
 
@@ -61,9 +62,22 @@ function runRealBacktest(config: any, signals: any[], tradeSummary: any[]): Back
 
         equity += pnl;
         dayMap[dateStr] = (dayMap[dateStr] || 0) + pnl;
+        // Always overwrite with latest equity for this date (last trade wins)
+        dayEquityMap[dateStr] = Math.round(equity);
         maxEq = Math.max(maxEq, equity);
         maxDD = Math.max(maxDD, maxEq > 0 ? ((maxEq - equity) / maxEq) * 100 : 0);
-        curve.push({ date: dateStr, equity: Math.round(equity) });
+    });
+
+    // Build equity curve from deduplicated daily end-of-day values
+    // This ensures the chart's last point matches totalPnl exactly
+    const curve: { date: string; equity: number }[] = [];
+    const dates = Object.keys(dayEquityMap);
+    if (dates.length > 0) {
+        // Add starting point before first trade date
+        curve.push({ date: 'Start', equity: Math.round(initial) });
+    }
+    dates.forEach(date => {
+        curve.push({ date, equity: dayEquityMap[date] });
     });
 
     const dailyReturns = Object.entries(dayMap).map(([date, pnl]) => ({ date, pnl: Math.round(pnl) }));

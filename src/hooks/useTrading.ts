@@ -11,7 +11,7 @@ import {
     computeTradeStats, fetchEngineHealth,
     type LiveSignal, type ActiveTrade, type TradeSummary,
     type MarketSnapshot, type TradeStats, type EngineHealth
-} from '../services/sheetsApi';
+} from '../services/supabaseApi';
 
 /** Unified state object for the trading environment */
 export interface TradingState {
