@@ -46,6 +46,14 @@ CREATE TABLE IF NOT EXISTS signals (
   session_progress NUMERIC(5,2),
   atm_strike NUMERIC(10,2),
   
+  -- Newly Added Telemetry Fields
+  "LastFireTime" TEXT,
+  "LastSignal" TEXT,
+  "rawSignal" TEXT,
+  "IV_skew_bias" TEXT,
+  "GEX_Regime" TEXT,
+  "Gamma_Flip_Level" NUMERIC(10,2),
+  
   created_at TIMESTAMPTZ DEFAULT NOW()
 );
 

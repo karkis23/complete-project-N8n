@@ -31,6 +31,7 @@ Institutional-grade automated NIFTY trading ecosystem combining **Zenith Midnigh
 *   [**Protocol Manual**](./docs/AGENT_DOCUMENT.md)
 *   [**Supabase Migration Guide**](./docs/guides/SUPABASE_MIGRATION_GUIDE.md)
 *   [**Operations Guide**](./docs/guides/LOCAL_AI_OPERATIONS_GUIDE.md)
+*   [**Deep Telemetry Pipeline**](./docs/guides/TELEMETRY_PIPELINE_V4.2.md)
 
 ---
 *System Version: 4.3.0 | Zenith Professional Standard | Terminal Status: Active | Supabase Migration: Complete | Last Synced: March 20, 2026*
