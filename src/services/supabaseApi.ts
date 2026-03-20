@@ -1,3 +1,10 @@
+/**
+ * SUPABASE API SERVICE LAYER
+ * 
+ * This module acts as the primary telemetry bridge between the Zenith Frontend 
+ * and the remote PostgreSQL signal database. It maps snake_case database fields 
+ * to camelCase TypeScript interfaces used throughout the UI.
+ */
 import { supabase } from './supabaseClient';
 import axios from 'axios';
 

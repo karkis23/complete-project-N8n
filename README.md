@@ -1,36 +1,40 @@
-# 🌌 ZENITH: Advanced Trading Terminal v4.3.0
+# 💠 Zenith Quantum Terminal v4.2.0
 
-Institutional-grade automated NIFTY trading ecosystem combining **Zenith Midnight Aesthetics**, **Proprietary Intelligence Microservices**, and high-fidelity **Market Analytics**.
+Zenith is a premium, high-frequency trading dashboard designed for the Indian Derivatives market (Nifty/BankNifty). It acts as a real-time visualization and audit layer for a remote Python-based Alpha Engine.
 
-## 📁 System Architecture
+## 🏗️ System Architecture
 
-*   **/backend**: 🧠 **Intelligence Engine** (Python 3.12 FastAPI + XGBoost + Market Vectors)
-*   **/src**: 🖥️ **Terminal Interface** (React 18 + Vite + TypeScript + Zenith Professional UI)
-*   **/n8n**: 🎡 **Operational Matrix** (Workflow orchestration & persistence)
-*   **/docs**: 📚 **System Archive** (Specifications, Handbooks, and Operational Guides)
-*   **/archive**: Legacy artifacts and non-production logic
+### 1. Data Orchestration (`useTrading.ts`)
+The application uses a centralized React Hook to manage all telemetry. 
+- **Dynamic Polling**: Automatically adjusts sync frequency based on IST market hours (30s during market, 3m after hours).
+- **Graceful Failover**: Uses `Promise.allSettled` to ensure UI parts remain functional even if specific engine diagnostics fail.
 
-## 🚀 Terminal Deployment
+### 2. Atomic Price Locking (`ValidationPage.tsx`)
+To solve the problem of "result-flipping" in signal audits, Zenith implements an atomic locking mechanism:
+- **Phase 1 (Pending)**: Signals < 10m old are not evaluated.
+- **Phase 2 (Live)**: Signals 10m-30m old are compared against the *live* Nifty spot price.
+- **Phase 3 (Locked)**: Once a signal is > 30m old, the system searches the database for a signal generated ~15m after the entry and "anchors" the comparison price. This ensures historical win rates remain mathematically stable.
 
-1.  **Initialize Intelligence**: Launch the inference server with automated environment isolation:
-    ```powershell
-    cd backend
-    ./start_server.bat
-    ```
-2.  **Activate Operational Matrix**: Import the Supabase workflow files (`NEWN8NFINAL_SUPABASE.JSON` + `exit_order_monitor_supabase.json`) into your n8n instance.
-3.  **Launch Interface**: Initialize the terminal dashboard:
-    ```powershell
-    npm run dev
-    ```
-4.  **Reference**: Consult the [System Handbook](./docs/PROJECT_DOCUMENT.md) for deep architectural insights.
+### 3. Strategy Lab Engine (`BacktestPage.tsx`)
+A high-fidelity simulation environment that uses a **Hybrid Execution Model**:
+- **Broker Match**: If a simulated signal matches a real-world executed trade, it uses official broker PnL (including slippage).
+- **Probabilistic Fill**: If no real trade exists, it uses a deterministic RNG seeded by signal time to simulate outcomes based on confidence scores.
 
-## 🛠️ Operational Repository
+### 4. Design System (`index.css` & `Sidebar.tsx`)
+- **Aesthetic**: "Quantum Dark" glassmorphism.
+- **Micro-interactions**: Pulse animations for live connectivity, smooth slide-ins for expanded table rows.
+- **Typography**: Optimized using `Inter` for UI and `JetBrains Mono` for financial telemetry.
 
-*   [**Intelligence Architecture**](./docs/guides/PYTHON_AI_MODEL_ARCHITECTURE.md)
-*   [**Terminal Handbook**](./docs/PROJECT_DOCUMENT.md)
-*   [**Protocol Manual**](./docs/AGENT_DOCUMENT.md)
-*   [**Supabase Migration Guide**](./docs/guides/SUPABASE_MIGRATION_GUIDE.md)
-*   [**Operations Guide**](./docs/guides/LOCAL_AI_OPERATIONS_GUIDE.md)
+## 🛠️ Tech Stack
+- **Frontend**: React 18, TypeScript, Vite
+- **Data Layer**: Supabase (PostgreSQL), Axios
+- **Charts**: Recharts (High-performance SVG)
+- **Icons**: Lucide React
+
+## 🚀 Key Features
+- **Global Search & Date Filters**: Deep drill-down into signals and audit logs across all pages.
+- **Telemetery Sync**: Real-time tracking of Python Engine health, database sync, and live feed latency.
+- **Deep Telemetry**: Technical matrix (RSI, ADX, PCR, GEX, IV Skew) for every generated signal.
 
 ---
-*System Version: 4.3.0 | Zenith Professional Standard | Terminal Status: Active | Supabase Migration: Complete | Last Synced: March 20, 2026*
+*Zenith — Advanced Trading Intelligence*

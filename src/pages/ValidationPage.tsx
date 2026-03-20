@@ -2,7 +2,8 @@ import { useMemo, useState, Fragment } from 'react';
 import {
     ShieldCheck, Globe, Activity,
     FileText, ChevronDown, ChevronRight,
-    Download, Cpu, TrendingUp, TrendingDown
+    Download, Cpu, TrendingUp, TrendingDown,
+    Calendar
 } from 'lucide-react';
 import {
     BarChart, Bar, XAxis, Tooltip,
@@ -22,26 +23,33 @@ const TooltipStyle = {
 export default function ValidationPage() {
     const { signals, marketData } = useTrading();
     const [expandedRow, setExpandedRow] = useState<number | null>(null);
+    const [filter, setFilter] = useState<string>('ALL');
+    const [search, setSearch] = useState('');
+    const [dateRange, setDateRange] = useState({ start: '', end: '' });
+    const [showDatePanel, setShowDatePanel] = useState(false);
 
     /**
-     * SIGNAL AUDIT RESULT CALCULATION (Fixed)
+     * CORE AUDIT ENGINE: analyzed
      * 
-     * Previous bug: All signals compared against the live Nifty price,
-     * causing results to flip every time the price updated.
+     * This effect processes raw signals into audited performance rows.
+     * To ensure audit integrity, it implements "Atomic Price Locking":
      * 
-     * Correct approach:
-     * 1. Signals < 10 mins old  → PENDING (too early to evaluate)
-     * 2. Signals 10-30 mins old → Compare against LIVE price (evaluation window)
-     * 3. Signals > 30 mins old  → Compare against the spot price from a LATER
-     *    signal row (closest to 15-30 mins after). This LOCKS IN the result
-     *    permanently so it never changes again.
+     * 1. PENDING (< 10m): Signal is too fresh. We don't evaluate yet as price
+     *    hasn't had time to move significantly.
+     * 
+     * 2. LIVE (10m - 30m): The "Evaluation Window". We compare the entry signal
+     *    against the CURRENT LIVE Nifty price. The result will fluctuate.
+     * 
+     * 3. LOCKED (> 30m): The "Permanent Anchor". We search for a later signal 
+     *    timestamp (ideally +15m after entry) and use THAT historical spot price 
+     *    as the comparison. Once this price is found, the result is LOCKED 
+     *    permanently and will never change again, even if Nifty moves 1000 points.
      */
     const analyzed = useMemo(() => {
         const liveNifty = marketData?.niftyLTP ?? 0;
         const nowMs = Date.now();
 
-        // Signals are sorted newest-first, so we work with a time-sorted copy
-        // to find the "comparison price" from a later signal for old entries
+        // Sort chronologically (oldest first) for easier temporal searching
         const chronological = [...signals].sort(
             (a, b) => new Date(a.timestamp).getTime() - new Date(b.timestamp).getTime()
         );
@@ -55,29 +63,33 @@ export default function ValidationPage() {
             let priceSource: 'PENDING' | 'LIVE' | 'LOCKED' = 'PENDING';
 
             if (ageMinutes < 10) {
-                // Too early — not enough time for price to move
+                // PHASE 1: Awaiting price development
                 comparePrice = 0;
                 priceSource = 'PENDING';
             } else if (ageMinutes < 30) {
-                // Evaluation window — use live price
+                // PHASE 2: Live tracking against current market
                 comparePrice = liveNifty;
                 priceSource = 'LIVE';
             } else {
-                // Signal is old enough — find the spot price from a later signal
-                // that was generated 10-30 minutes after this one (locked result)
-                const targetWindowStart = signalTimeMs + 10 * 60000; // +10 min
-                const targetWindowEnd = signalTimeMs + 45 * 60000;   // +45 min (wide window)
+                // PHASE 3: Absolute locking via historical audit
+                const targetWindowStart = signalTimeMs + 10 * 60000;
+                const targetWindowEnd = signalTimeMs + 45 * 60000;
 
                 let bestMatch: typeof signals[0] | null = null;
                 let bestTimeDiff = Infinity;
+                let firstValidFallback: typeof signals[0] | null = null;
 
                 for (const later of chronological) {
                     const laterMs = new Date(later.timestamp).getTime();
-                    if (laterMs <= signalTimeMs) continue; // Skip same or earlier
-                    if (laterMs < targetWindowStart) continue; // Too close
-                    if (laterMs > targetWindowEnd) break; // Past the window
+                    if (laterMs <= signalTimeMs) continue;
+                    if (laterMs < targetWindowStart) continue;
+                    
+                    if (!firstValidFallback && later.spotPrice > 0) {
+                        firstValidFallback = later;
+                    }
 
-                    // Prefer the signal closest to 15 minutes after
+                    if (laterMs > targetWindowEnd) break;
+
                     const idealTarget = signalTimeMs + 15 * 60000;
                     const diff = Math.abs(laterMs - idealTarget);
                     if (diff < bestTimeDiff && later.spotPrice > 0) {
@@ -89,9 +101,11 @@ export default function ValidationPage() {
                 if (bestMatch && bestMatch.spotPrice > 0) {
                     comparePrice = bestMatch.spotPrice;
                     priceSource = 'LOCKED';
+                } else if (firstValidFallback && firstValidFallback.spotPrice > 0) {
+                    comparePrice = firstValidFallback.spotPrice;
+                    priceSource = 'LOCKED';
                 } else {
-                    // No later signal found in window — use live as fallback
-                    // (this can happen for the most recent signals on the boundary)
+                    // Fallback to live if no future signal data is available yet
                     comparePrice = liveNifty;
                     priceSource = liveNifty > 0 ? 'LIVE' : 'PENDING';
                 }
@@ -114,9 +128,34 @@ export default function ValidationPage() {
         });
     }, [signals, marketData]);
 
+    const filtered = useMemo(() => analyzed.filter(s => {
+        const f = filter === 'ALL' ? true
+            : filter === 'CE' ? s.finalSignal.includes('CE')
+            : filter === 'PE' ? s.finalSignal.includes('PE')
+            : s.finalSignal === 'WAIT' || s.finalSignal === 'AVOID' || s.finalSignal === 'SIDEWAYS';
+        const q = search.toLowerCase();
+        const m = !q || s.finalSignal.toLowerCase().includes(q) || (s.regime || '').toLowerCase().includes(q);
+        
+        // Date filtering
+        const sigTime = new Date(s.timestamp);
+        const dStart = dateRange.start ? new Date(dateRange.start) : null;
+        const dEnd = dateRange.end ? new Date(dateRange.end) : null;
+        if (dEnd) dEnd.setHours(23, 59, 59, 999); // Inclusion of full end day
+
+        const inDate = (!dStart || sigTime >= dStart) && (!dEnd || sigTime <= dEnd);
+
+        return f && m && inDate;
+    }), [analyzed, filter, search, dateRange]);
+
+    const counts = useMemo(() => ({
+        all: analyzed.length,
+        ce: analyzed.filter(s => s.finalSignal.includes('CE')).length,
+        pe: analyzed.filter(s => s.finalSignal.includes('PE')).length,
+    }), [analyzed]);
+
     const regimeStats = useMemo(() => {
         const map: Record<string, { regime: string; total: number; correct: number }> = {};
-        analyzed.forEach(s => {
+        filtered.forEach(s => {
             const r = s.regime || 'NORMAL';
             if (!map[r]) map[r] = { regime: r, total: 0, correct: 0 };
             map[r].total++;
@@ -126,11 +165,11 @@ export default function ValidationPage() {
             ...r,
             winRate: Math.round((r.correct / (r.total || 1)) * 100)
         })).sort((a, b) => b.winRate - a.winRate);
-    }, [analyzed]);
+    }, [filtered]);
 
     const hourly = useMemo(() => {
         const h: Record<number, { hour: string; total: number; correct: number }> = {};
-        analyzed.forEach(s => {
+        filtered.forEach(s => {
             const hr = new Date(s.timestamp).getHours();
             if (!h[hr]) h[hr] = { hour: `${hr}:00`, total: 0, correct: 0 };
             h[hr].total++;
@@ -140,16 +179,16 @@ export default function ValidationPage() {
             ...x,
             winRate: Math.round((x.correct / (x.total || 1)) * 100)
         })).sort((a, b) => parseInt(a.hour) - parseInt(b.hour));
-    }, [analyzed]);
+    }, [filtered]);
 
-    const correct = analyzed.filter(a => a.status === 'CORRECT').length;
-    const tradeable = analyzed.filter(a => a.status !== 'PENDING').length;
+    const correct = filtered.filter(a => a.status === 'CORRECT').length;
+    const tradeable = filtered.filter(a => a.status !== 'PENDING').length;
     const accuracy = tradeable > 0 ? (correct / tradeable) * 100 : 0;
 
     const handleExport = () => {
         const csv = [
             'Timestamp,Signal,Entry Price,Compare Price,Price Source,Move %,Status,RSI,Confidence,ADX',
-            ...analyzed.map(a => `${a.timestamp},${a.finalSignal},${a.spotPrice},${a.comparePrice},${a.priceSource},${a.pct.toFixed(2)},${a.status},${(a as any).rsi?.toFixed(1)},${a.confidence},${a.adx?.toFixed(1)}`)
+            ...filtered.map(a => `${a.timestamp},${a.finalSignal},${a.spotPrice},${a.comparePrice},${a.priceSource},${a.pct.toFixed(2)},${a.status},${(a as any).rsi?.toFixed(1)},${a.confidence},${a.adx?.toFixed(1)}`)
         ].join('\n');
         const url = URL.createObjectURL(new Blob([csv], { type: 'text/csv' }));
         Object.assign(document.createElement('a'), { href: url, download: `zenith_audit_${new Date().toISOString().split('T')[0]}.csv` }).click();
@@ -165,18 +204,109 @@ export default function ValidationPage() {
                     <div style={{ fontSize: '10px', fontWeight: 700, letterSpacing: '0.1em', textTransform: 'uppercase', color: 'var(--accent-light)', marginBottom: '4px' }}>Strategy Verification</div>
                     <h2 style={{ fontSize: '22px', fontWeight: 700, color: 'var(--text-1)', letterSpacing: '-0.02em' }}>Signal Audit</h2>
                 </div>
-                <button
-                    onClick={handleExport}
-                    style={{
-                        display: 'flex', alignItems: 'center', gap: '7px',
-                        padding: '7px 16px', borderRadius: 'var(--r-md)',
-                        border: '1px solid var(--border)', background: 'var(--bg-elevated)',
-                        color: 'var(--text-2)', fontSize: '12.5px', fontWeight: 600,
-                        cursor: 'pointer', transition: 'var(--trans-s)'
-                    }}
-                >
-                    <Download size={13} /> Export CSV
-                </button>
+                <div style={{ display: 'flex', gap: '10px' }}>
+                    <button
+                        onClick={handleExport}
+                        style={{
+                            display: 'flex', alignItems: 'center', gap: '7px',
+                            padding: '7px 16px', borderRadius: 'var(--r-md)',
+                            border: '1px solid var(--border)', background: 'var(--bg-elevated)',
+                            color: 'var(--text-2)', fontSize: '12.5px', fontWeight: 600,
+                            cursor: 'pointer', transition: 'var(--trans-s)'
+                        }}
+                    >
+                        <Download size={13} /> Export CSV
+                    </button>
+                </div>
+            </div>
+
+            {/* Filter Group */}
+            <div style={{ display: 'flex', gap: '10px', flexWrap: 'wrap', alignItems: 'center' }}>
+                {[
+                    { key: 'ALL', label: `All — ${counts.all}`, color: 'var(--text-1)' },
+                    { key: 'CE',  label: `Buy (CE) — ${counts.ce}`, color: 'var(--profit)' },
+                    { key: 'PE',  label: `Sell (PE) — ${counts.pe}`, color: 'var(--loss)' },
+                    { key: 'WAIT',label: `Wait — ${counts.all - counts.ce - counts.pe}`, color: 'var(--text-3)' },
+                ].map(({ key, label, color }) => (
+                    <button
+                        key={key}
+                        onClick={() => setFilter(key)}
+                        style={{
+                            padding: '6px 14px',
+                            borderRadius: '99px',
+                            border: `1px solid ${filter === key ? 'var(--border-strong)' : 'var(--border)'}`,
+                            background: filter === key ? 'var(--bg-elevated)' : 'transparent',
+                            color: filter === key ? color : 'var(--text-3)',
+                            fontSize: '12px', fontWeight: 600,
+                            cursor: 'pointer', transition: 'var(--trans-s)'
+                        }}
+                    >
+                        {label}
+                    </button>
+                ))}
+
+                {/* Date Filter Toggle */}
+                <div style={{ position: 'relative' }}>
+                    <button
+                        onClick={() => setShowDatePanel(!showDatePanel)}
+                        style={{
+                            display: 'flex', alignItems: 'center', gap: '8px',
+                            padding: '0 16px', height: '34px',
+                            borderRadius: '99px', border: `1px solid ${dateRange.start || dateRange.end ? 'var(--accent-light)' : 'var(--border)'}`,
+                            background: dateRange.start || dateRange.end ? 'var(--accent-dim)' : 'var(--bg-elevated)',
+                            color: dateRange.start || dateRange.end ? 'var(--accent-light)' : 'var(--text-3)',
+                            fontSize: '12px', fontWeight: 600, cursor: 'pointer', transition: 'var(--trans-s)'
+                        }}
+                    >
+                        <Calendar size={13} />
+                        {dateRange.start ? `${new Date(dateRange.start).toLocaleDateString('en-IN', {day:'2-digit', month:'short'})} — ${dateRange.end ? new Date(dateRange.end).toLocaleDateString('en-IN', {day:'2-digit', month:'short'}) : '...'}` : 'Filter Dates'}
+                    </button>
+
+                    {showDatePanel && (
+                        <div className="card slide-up" style={{
+                            position: 'absolute', top: 'calc(100% + 10px)', left: 0, zIndex: 100,
+                            padding: '16px', minWidth: '240px', boxShadow: '0 10px 30px rgba(0,0,0,0.5)',
+                            background: 'var(--bg-surface)', border: '1px solid var(--border-strong)'
+                        }}>
+                            <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+                                <div style={{ display: 'flex', flexDirection: 'column', gap: '5px' }}>
+                                    <label style={{ fontSize: '10px', fontWeight: 700, color: 'var(--text-3)', textTransform: 'uppercase' }}>Start Date</label>
+                                    <input type="date" value={dateRange.start} onChange={e => setDateRange({...dateRange, start: e.target.value})}
+                                        style={{ background: 'var(--bg-elevated)', border: '1px solid var(--border)', padding: '6px 10px', borderRadius: '6px', color: 'var(--text-1)', fontSize: '12px' }} />
+                                </div>
+                                <div style={{ display: 'flex', flexDirection: 'column', gap: '5px' }}>
+                                    <label style={{ fontSize: '10px', fontWeight: 700, color: 'var(--text-3)', textTransform: 'uppercase' }}>End Date</label>
+                                    <input type="date" value={dateRange.end} onChange={e => setDateRange({...dateRange, end: e.target.value})}
+                                        style={{ background: 'var(--bg-elevated)', border: '1px solid var(--border)', padding: '6px 10px', borderRadius: '6px', color: 'var(--text-1)', fontSize: '12px' }} />
+                                </div>
+                                <div style={{ display: 'flex', gap: '8px', marginTop: '4px' }}>
+                                    <button onClick={() => setDateRange({start: '', end: ''})} style={{ flex: 1, padding: '6px', fontSize: '11px', fontWeight: 600, color: 'var(--text-3)', background: 'transparent', border: 'none', cursor: 'pointer' }}>Reset</button>
+                                    <button onClick={() => setShowDatePanel(false)} style={{ flex: 1, padding: '6px', fontSize: '11px', fontWeight: 700, color: 'white', background: 'var(--accent)', borderRadius: '4px', border: 'none', cursor: 'pointer' }}>Apply</button>
+                                </div>
+                            </div>
+                        </div>
+                    )}
+                </div>
+
+                {/* Search */}
+                <div style={{
+                    display: 'flex', alignItems: 'center', gap: '8px',
+                    padding: '0 12px', height: '34px',
+                    border: '1px solid var(--border)', borderRadius: '99px',
+                    background: 'var(--bg-elevated)', marginLeft: 'auto'
+                }}>
+                    <Activity size={13} color="var(--text-3)" />
+                    <input
+                        className="input-field"
+                        style={{
+                            border: 'none', background: 'transparent', width: '160px',
+                            height: '100%', padding: '0', fontSize: '12.5px'
+                        }}
+                        placeholder="Search audit log..."
+                        value={search}
+                        onChange={e => setSearch(e.target.value)}
+                    />
+                </div>
             </div>
 
             {/* KPIs */}
@@ -204,8 +334,8 @@ export default function ValidationPage() {
                 </div>
                 <div className="kpi-card">
                     <div className="kpi-label"><Cpu size={13} color="var(--accent-light)" /> Sample Size</div>
-                    <div className="kpi-value font-mono">{analyzed.length}</div>
-                    <div className="kpi-sub">{analyzed.filter(a => a.priceSource === 'LOCKED').length} locked · {analyzed.filter(a => a.priceSource === 'PENDING').length} pending</div>
+                    <div className="kpi-value font-mono">{filtered.length}</div>
+                    <div className="kpi-sub">{filtered.filter(a => a.priceSource === 'LOCKED').length} locked · {filtered.filter(a => a.priceSource === 'PENDING').length} pending</div>
                 </div>
             </div>
 
@@ -219,7 +349,7 @@ export default function ValidationPage() {
                         <FileText size={15} color="var(--accent-light)" />
                         <span className="section-title">Signal Performance Log</span>
                     </div>
-                    <span className="section-meta">Showing all {analyzed.length} entries</span>
+                    <span className="section-meta">Showing {filtered.length} of {analyzed.length} entries</span>
                 </div>
                 <div style={{ overflowX: 'auto', maxHeight: '600px', overflowY: 'auto' }}>
                     <table className="data-table" style={{ borderCollapse: 'separate', borderSpacing: 0 }}>
@@ -236,7 +366,7 @@ export default function ValidationPage() {
                             </tr>
                         </thead>
                         <tbody>
-                            {analyzed.map((a, i) => (
+                            {filtered.map((a, i) => (
                                 <Fragment key={i}>
                                     <tr onClick={() => setExpandedRow(expandedRow === i ? null : i)}
                                         style={{ cursor: 'pointer' }}>
