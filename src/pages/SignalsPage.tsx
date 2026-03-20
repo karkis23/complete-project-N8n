@@ -1,5 +1,5 @@
 import React, { useState, useMemo } from 'react';
-import { Search, ChevronRight, ChevronDown, TrendingUp, TrendingDown, ShieldAlert } from 'lucide-react';
+import { Search, ChevronRight, ChevronDown, TrendingUp, TrendingDown, ShieldAlert, Calendar } from 'lucide-react';
 import { useTrading } from '../hooks/useTrading';
 import { LogicTags } from './DashboardPage';
 
@@ -15,6 +15,8 @@ export default function SignalsPage() {
     const [search, setSearch] = useState('');
     const [filter, setFilter] = useState<string>('ALL');
     const [expanded, setExpanded] = useState<string | null>(null);
+    const [dateRange, setDateRange] = useState({ start: '', end: '' });
+    const [showDatePanel, setShowDatePanel] = useState(false);
 
     const filtered = useMemo(() => signals.filter(s => {
         const f = filter === 'ALL' ? true
@@ -23,8 +25,17 @@ export default function SignalsPage() {
             : s.finalSignal === 'WAIT' || s.finalSignal === 'AVOID' || s.finalSignal === 'SIDEWAYS';
         const q = search.toLowerCase();
         const m = !q || s.finalSignal.toLowerCase().includes(q) || (s.regime || '').toLowerCase().includes(q);
-        return f && m;
-    }), [signals, filter, search]);
+        
+        // Date filtering
+        const sigTime = new Date(s.timestamp);
+        const dStart = dateRange.start ? new Date(dateRange.start) : null;
+        const dEnd = dateRange.end ? new Date(dateRange.end) : null;
+        if (dEnd) dEnd.setHours(23, 59, 59, 999);
+
+        const inDate = (!dStart || sigTime >= dStart) && (!dEnd || sigTime <= dEnd);
+
+        return f && m && inDate;
+    }), [signals, filter, search, dateRange]);
 
     const counts = {
         all: signals.length,
@@ -71,6 +82,49 @@ export default function SignalsPage() {
                         {label}
                     </button>
                 ))}
+
+                {/* Date Filter Toggle */}
+                <div style={{ position: 'relative' }}>
+                    <button
+                        onClick={() => setShowDatePanel(!showDatePanel)}
+                        style={{
+                            display: 'flex', alignItems: 'center', gap: '8px',
+                            padding: '0 16px', height: '34px',
+                            borderRadius: '99px', border: `1px solid ${dateRange.start || dateRange.end ? 'var(--accent-light)' : 'var(--border)'}`,
+                            background: dateRange.start || dateRange.end ? 'var(--accent-dim)' : 'var(--bg-elevated)',
+                            color: dateRange.start || dateRange.end ? 'var(--accent-light)' : 'var(--text-3)',
+                            fontSize: '12px', fontWeight: 600, cursor: 'pointer', transition: 'var(--trans-s)'
+                        }}
+                    >
+                        <Calendar size={13} />
+                        {dateRange.start ? `${new Date(dateRange.start).toLocaleDateString('en-IN', {day:'2-digit', month:'short'})} — ${dateRange.end ? new Date(dateRange.end).toLocaleDateString('en-IN', {day:'2-digit', month:'short'}) : '...'}` : 'Filter Dates'}
+                    </button>
+
+                    {showDatePanel && (
+                        <div className="card slide-up" style={{
+                            position: 'absolute', top: 'calc(100% + 10px)', left: 0, zIndex: 100,
+                            padding: '16px', minWidth: '240px', boxShadow: '0 10px 30px rgba(0,0,0,0.5)',
+                            background: 'var(--bg-surface)', border: '1px solid var(--border-strong)'
+                        }}>
+                            <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+                                <div style={{ display: 'flex', flexDirection: 'column', gap: '5px' }}>
+                                    <label style={{ fontSize: '10px', fontWeight: 700, color: 'var(--text-3)', textTransform: 'uppercase' }}>Start Date</label>
+                                    <input type="date" value={dateRange.start} onChange={e => setDateRange({...dateRange, start: e.target.value})}
+                                        style={{ background: 'var(--bg-elevated)', border: '1px solid var(--border)', padding: '6px 10px', borderRadius: '6px', color: 'var(--text-1)', fontSize: '12px' }} />
+                                </div>
+                                <div style={{ display: 'flex', flexDirection: 'column', gap: '5px' }}>
+                                    <label style={{ fontSize: '10px', fontWeight: 700, color: 'var(--text-3)', textTransform: 'uppercase' }}>End Date</label>
+                                    <input type="date" value={dateRange.end} onChange={e => setDateRange({...dateRange, end: e.target.value})}
+                                        style={{ background: 'var(--bg-elevated)', border: '1px solid var(--border)', padding: '6px 10px', borderRadius: '6px', color: 'var(--text-1)', fontSize: '12px' }} />
+                                </div>
+                                <div style={{ display: 'flex', gap: '8px', marginTop: '4px' }}>
+                                    <button onClick={() => setDateRange({start: '', end: ''})} style={{ flex: 1, padding: '6px', fontSize: '11px', fontWeight: 600, color: 'var(--text-3)', background: 'transparent', border: 'none', cursor: 'pointer' }}>Reset</button>
+                                    <button onClick={() => setShowDatePanel(false)} style={{ flex: 1, padding: '6px', fontSize: '11px', fontWeight: 700, color: 'white', background: 'var(--accent)', borderRadius: '4px', border: 'none', cursor: 'pointer' }}>Apply</button>
+                                </div>
+                            </div>
+                        </div>
+                    )}
+                </div>
 
                 {/* Search */}
                 <div style={{

@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import {
     Play, RotateCcw, CheckCircle2, Settings2,
     Target, ShieldCheck, Zap, Activity,
-    BarChart3, Info
+    BarChart3, Info, Calendar
 } from 'lucide-react';
 import {
     AreaChart, Area, XAxis, YAxis, Tooltip,
@@ -18,6 +18,26 @@ interface BacktestResult {
     dailyReturns: { date: string; pnl: number }[];
 }
 
+/**
+ * CORE SIMULATION ENGINE: runRealBacktest
+ * 
+ * This engine generates a high-fidelity equity curve by replaying historical signals 
+ * through a set of risk parameters. It uses a "Hybrid Execution Model":
+ * 
+ * 1. REAL TRADE MATCHING: If a signal has a corresponding entry in the real-world 
+ *    `tradeSummary` (within a 5-minute window), it uses the ACTUAL PnL from the 
+ *    broker. This accounts for slippage and real execution costs.
+ * 
+ * 2. PROBABILISTIC FILL: If no real trade exists (e.g., system was offline or missed), 
+ *    it calculates a probabilistic outcome based on signal confidence and a 
+ *    seeded RNG (deterministic based on signal time) to simulate a "what if" scenario.
+ * 
+ * 3. DAILY AGGREGATION: Tracks end-of-day equity to produce the visual curve.
+ * 
+ * @param config User-defined parameters (Target, SL, Confidence, etc.)
+ * @param signals Historical signal database
+ * @param tradeSummary Real-world execution ledger
+ */
 function runRealBacktest(config: any, signals: any[], tradeSummary: any[]): BacktestResult {
     let equity = config.startCapital || 100000;
     const initial = equity;
@@ -33,7 +53,15 @@ function runRealBacktest(config: any, signals: any[], tradeSummary: any[]): Back
         const modeOk = config.engineMode === 'ALL' ||
             (config.engineMode === 'AI'    &&  s.engineMode === 'AI_ENSEMBLE') ||
             (config.engineMode === 'RULES' &&  s.engineMode !== 'AI_ENSEMBLE');
-        return conf >= config.confidenceThreshold && (config.vixThreshold === 0 || vix <= config.vixThreshold) && modeOk;
+        
+        // Date filtering
+        const sigTime = new Date(s.timestamp);
+        const dStart = config.startDate ? new Date(config.startDate) : null;
+        const dEnd = config.endDate ? new Date(config.endDate) : null;
+        if (dEnd) dEnd.setHours(23, 59, 59, 999);
+        const inDate = (!dStart || sigTime >= dStart) && (!dEnd || sigTime <= dEnd);
+
+        return conf >= config.confidenceThreshold && (config.vixThreshold === 0 || vix <= config.vixThreshold) && modeOk && inDate;
     }).reverse();
 
     filtered.forEach(s => {
@@ -42,38 +70,46 @@ function runRealBacktest(config: any, signals: any[], tradeSummary: any[]): Back
         if (!isCE && !isPE) return;
 
         const sigTime = new Date(s.timestamp).getTime();
+        
+        // --- STEP 1: ATTEMPT TO MATCH WITH REAL-WORLD BROKER EXECUTION ---
         const realTrade = tradeSummary.find(t => {
             const dt = Math.abs(new Date(t.timestamp).getTime() - sigTime);
+            // Match within 5 min window if directionally consistent
             return dt < 300000 && ((isCE && t.signal?.includes('CE')) || (isPE && t.signal?.includes('PE')));
         });
 
         let pnl = 0;
         const lots = config.lotSize || 50;
+        
         if (realTrade && !['ACTIVE','OPEN'].includes(realTrade.status)) {
+            // Use broker-certified PnL
             pnl = realTrade.pnl || 0;
         } else {
+            // --- STEP 2: FALLBACK TO MATHEMATICAL SIMULATION ---
             const prob = Math.abs(s.confidence || 50) / 100;
+            // Deterministic random seed ensures consistency across UI refreshes
             const rng = Math.abs(Math.sin(sigTime)) % 1;
             pnl = rng < prob ? config.targetPoints * lots : -(config.stopLossPoints * lots);
         }
 
+        // --- STEP 3: ACCOUNTING & METRICS ---
         if (pnl > 0) { wins++; totalWin  += Math.abs(pnl); }
         else          { losses++; totalLoss += Math.abs(pnl); }
 
         equity += pnl;
         dayMap[dateStr] = (dayMap[dateStr] || 0) + pnl;
-        // Always overwrite with latest equity for this date (last trade wins)
+        
+        // Track EOD Equity for chart plotting
         dayEquityMap[dateStr] = Math.round(equity);
+        
+        // Track High-Water Mark for Drawdown reporting
         maxEq = Math.max(maxEq, equity);
         maxDD = Math.max(maxDD, maxEq > 0 ? ((maxEq - equity) / maxEq) * 100 : 0);
     });
 
-    // Build equity curve from deduplicated daily end-of-day values
-    // This ensures the chart's last point matches totalPnl exactly
     const curve: { date: string; equity: number }[] = [];
     const dates = Object.keys(dayEquityMap);
     if (dates.length > 0) {
-        // Add starting point before first trade date
         curve.push({ date: 'Start', equity: Math.round(initial) });
     }
     dates.forEach(date => {
@@ -147,6 +183,7 @@ export default function BacktestPage() {
         stopLossPoints: 12, targetPoints: 25,
         confidenceThreshold: 75, vixThreshold: 18,
         engineMode: 'ALL', startCapital: 100000,
+        startDate: '', endDate: ''
     });
     const [result, setResult] = useState<BacktestResult | null>(null);
     const [running, setRunning] = useState(false);
@@ -284,6 +321,24 @@ export default function BacktestPage() {
                                 <p style={{ fontSize: '12.5px', color: 'var(--text-3)', lineHeight: 1.6 }}>
                                     Signals are skipped when India VIX exceeds <strong style={{ color: 'var(--text-1)' }}>{config.vixThreshold}</strong>. This guards against high-volatility slippage.
                                 </p>
+                            </div>
+                        </div>
+                        {/* Date Filter */}
+                        <div style={{ gridColumn: 'span 2', display: 'flex', flexDirection: 'column', gap: '10px', padding: '16px', borderRadius: 'var(--r-lg)', background: 'var(--bg-elevated)', border: '1px solid var(--border)' }}>
+                            <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '4px' }}>
+                                <Calendar size={14} color="var(--accent-light)" />
+                                <span style={{ fontSize: '10px', fontWeight: 700, color: 'var(--text-3)', textTransform: 'uppercase', letterSpacing: '0.08em' }}>Date Boundary Filter</span>
+                            </div>
+                            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
+                                <FieldGroup label="From Date">
+                                    <StyledInput type="date" value={config.startDate} onChange={e => setConfig({...config, startDate: e.target.value})} />
+                                </FieldGroup>
+                                <FieldGroup label="To Date">
+                                    <StyledInput type="date" value={config.endDate} onChange={e => setConfig({...config, endDate: e.target.value})} />
+                                </FieldGroup>
+                            </div>
+                            <div style={{ fontSize: '10.5px', color: 'var(--text-4)', marginTop: '4px' }}>
+                                Leave blank to backtest all available historical data.
                             </div>
                         </div>
                     </div>

@@ -47,7 +47,7 @@ const pageInfo: Record<string, { title: string; subtitle: string }> = {
 const AppContent: React.FC = () => {
   const location = useLocation();
   const info = pageInfo[location.pathname] || pageInfo['/'];
-  const { marketData, activeTrades, engineHealth, refresh, loading, isPaused, togglePolling } = useTrading();
+  const { marketData, activeTrades, engineHealth, refresh, loading, isPaused, togglePolling, error } = useTrading();
   const { theme, toggleTheme } = useTheme();
 
 
@@ -80,7 +80,15 @@ const AppContent: React.FC = () => {
         opacity: theme === 'dark' ? 0.05 : 0.03, pointerEvents: 'none', zIndex: 0
       }} />
 
-      <Sidebar systemStatus={engineHealth?.online ? 'online' : 'warning'} activeTrades={activeTrades.length} />
+      <Sidebar 
+        systemStatus={engineHealth?.online ? 'online' : 'warning'} 
+        activeTrades={activeTrades.length} 
+        connections={{
+          engine: engineHealth?.online === true,
+          database: !error,
+          feed: marketData?.niftyLTP ? true : false
+        }}
+      />
       
       <div className="main-wrapper" style={{ 
         flex: 1, display: 'flex', flexDirection: 'column', 
