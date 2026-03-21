@@ -50,6 +50,11 @@ export interface LiveSignal {
     pocDistance: number;
     volatilityATR: number;
     sessionProgress: number;
+    lastFireTime?: string;
+    lastSignal?: string;
+    ivSkewBias?: string;
+    gexRegime?: string;
+    gammaFlipLevel?: number;
 }
 
 export interface ActiveTrade {
@@ -150,6 +155,11 @@ export async function fetchSignals(limit = 100): Promise<LiveSignal[]> {
         pocDistance: Number(r.poc_distance),
         volatilityATR: Number(r.volatility_atr),
         sessionProgress: Number(r.session_progress),
+        lastFireTime: r.LastFireTime,
+        lastSignal: r.LastSignal,
+        ivSkewBias: r.IV_skew_bias,
+        gexRegime: r.GEX_Regime,
+        gammaFlipLevel: Number(r["Gamma_Flip Level"]),
     }));
 }
 

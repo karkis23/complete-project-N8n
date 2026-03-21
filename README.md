@@ -31,10 +31,23 @@ A high-fidelity simulation environment that uses a **Hybrid Execution Model**:
 - **Charts**: Recharts (High-performance SVG)
 - **Icons**: Lucide React
 
+## 📊 Database Schema (`public.signals`)
+The signals table is organized into high-density telemetry groups:
+- **Metadata**: Core timestamps and engine versioning.
+- **Market Context**: Spot prices, VIX, and session progress.
+- **Technical Matrix**: RSI, MACD, ADX, Momentum, ATR.
+- **Derivatives & GEX**: PCR, Gamma Exposure, IV Skew, GEX Regimes.
+- **Signal Logic**: Final trade signals, confidence, and AI insights.
+
 ## 🚀 Key Features
 - **Global Search & Date Filters**: Deep drill-down into signals and audit logs across all pages.
 - **Telemetery Sync**: Real-time tracking of Python Engine health, database sync, and live feed latency.
 - **Deep Telemetry**: Technical matrix (RSI, ADX, PCR, GEX, IV Skew) for every generated signal.
+
+## 🤖 n8n Workflows (Production)
+The system relies on these two primary active workflows:
+- **LIVE TEST DATABASE** (`cVkMUvsXXmTKCc3t`): Handles live signal ingestion and Supabase persistence.
+- **excution (Archived)** (`E9VXtjxIzDOirmv3`): Manages order execution and broker connectivity.
 
 ---
 *Zenith — Advanced Trading Intelligence*
