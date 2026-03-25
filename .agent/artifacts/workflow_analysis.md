@@ -1,203 +1,101 @@
-# Trading Bot — Real Workflow Analysis & Development Plan
+# Zenith Quantum Terminal — Institutional Systems Analysis & Development Matrix
 
-## Actual Architecture (from your current n8n workflow)
+> **Aesthetic Profile:** Technical, analytical, and uncompromisingly precise.
+> **Core Objective:** Establish a high-frequency, low-latency trading infrastructure driven by probabilistic AI models and rigorous deterministic fallback checks.
+
+---
+
+## 1. Technical Architecture & Component Interface
+### Current Production Flow (v4.2)
 
 ```
-┌─────────────────────────────────────────────────────────────────────────┐
-│                  YOUR ACTUAL WORKING WORKFLOW                          │
-│                                                                        │
-│  ⏰ Cron 5min (9-15, Mon-Fri)                                         │
-│     → Trading Hour Filter (IST check)                                  │
-│     → TOTP Auth (n8n built-in node ✅)                                 │
-│     → Angel One Login (for historical candle data only)                │
-│     → Get 5Min Candles (Angel One Historical API)                      │
-│     → NIFTY Spot LTP (TradingView Scanner - free, no auth)            │
-│     → India VIX (TradingView Scanner)                                  │
-│     → VIX Filter (< 18)                                               │
-│     → Download Master File (Google Drive .xlsx)                        │
-│     → Extract & Parse Master (ATM options, nearest expiry)             │
-│     → NIFTY Option Chain Builder (Dhan LTP for each option)            │
-│     → Option Chain Request (Dhan /v2/optionchain)                      │
-│     → Calculate ALL Technical Indicators (21 indicators!)              │
-│     → Writers Zone Analysis (premium-based OI analysis)                │
-│     → Signal Code (weighted scoring → BUY CE/PE/WAIT/AVOID)           │
-│     → Log Signal to Google Sheets                                      │
-│     → Prepare Dhan Order (select ATM option)                           │
-│     → Place Entry Order (Dhan /v2/orders)                              │
-│     → Wait 60s → Get Order Status → Calculate SL & Target             │
-│     → Place SL (SL-M) + Place Target (LIMIT) — parallel               │
-│     → Log Active Trade → Log Trade Summary (Google Sheets)             │
-└─────────────────────────────────────────────────────────────────────────┘
+┌─────────────────────────────────────────────────────────────────────────────┐
+│                           n8n ORCHESTRATION PIPELINE                        │
+│                                                                             │
+│  ⏰ Cron 5min (9-15, Mon-Fri)                                              │
+│     → Angel One Login & Trading Hour Filter                                │
+│     → Fetch 1Min & 5Min Candles (Angel One)                                │
+│     → NIFTY Spot LTP & India VIX (TradingView Scanner)                     │
+│     → Download Option Chain Data                                           │
+│     → POST /api/predict (FastAPI Python Inference Engine)                  │
+│          ↳ Calculates 18 Technicals & 9 Greeks / Derivatives               │
+│          ↳ XGBoost ML Processing (or Logic v3.0 fallback)                  │
+│          ↳ Output: BUY_CE / BUY_PE / WAIT                                  │
+│     → IF Signal == BUY CE / BUY PE                                         │
+│          ↳ Log 64-field Telemetry Matrix → Supabase `signals` Table        │
+│          ↳ Prepare Dhan Order (Select ATM option via Option Chain)         │
+│          ↳ Place Entry Pattern (Dhan)                                      │
+│          ↳ Calculate Atomic SL (-12 pts) & Target (+25 pts)                │
+│          ↳ Place SL & Target (Parallel Leg)                                │
+│          ↳ Log Active Trade → Supabase `active_trades` Table               │
+│                                                                             │
+│  ⏰ Cron 1min (Exit Monitor)                                               │
+│     → Fetch Dhan Holdings                                                  │
+│     → Compare with Supabase Active Trades                                  │
+│     → Dynamic Trailing Stop Loss Updates via Dhan API                      │
+└─────────────────────────────────────────────────────────────────────────────┘
 ```
 
-## Key Differences from Old Workflow
+The Zenith framework operates on a highly decoupled microservice architecture, separating data orchestration, predictive inference, order execution, and terminal visualization.
 
-| Feature | Old (NEWN8NFINAL.JSON) | Real (Your Current) |
-|---------|----------------------|---------------------|
-| **Broker** | Angel One SmartAPI | **Dhan API** (orders) + Angel One (candles only) |
-| **TOTP** | Manual env variable ❌ | n8n built-in TOTP node ✅ |
-| **Spot Price** | Angel One getLTP | **TradingView Scanner** (free) |
-| **VIX** | Angel One getLTP | **TradingView Scanner** (free) |
-| **AI Model** | External Flask API | **In-workflow JS code** (no external dependency) |
-| **Sentiment API** | External Flask API | **Removed** (not used) |
-| **Option Chain** | Angel One option chain | **Dhan /v2/optionchain** |
-| **Master Data** | None | **Google Drive .xlsx** file |
-| **Indicators** | 6 basic | **21 comprehensive** indicators |
-| **Signal Logic** | External AI model | Fully self-contained weighted scoring |
+### A. Orchestration Layer (n8n Automatrix)
+- **Rhythmic Ingestion:** Built around a strict 5-minute chron job (09:15 - 15:30 IST) ensuring zero drift.
+- **Data Hydration:** Synchronously fetches historical OHLCV (Angel One), real-time pricing ticks (TradingView), and complex Option Chain metadata (Dhan HQ).
+- **Symbology Translation:** Dynamically parses Option Chain arrays to automatically resolve the At-The-Money (ATM) Security ID, neutralizing the risk of expired contract execution.
 
-## What's WORKING ✅
+### B. Inference Engine (Python / FastAPI)
+- **High-Dimensional Extraction:** Transforms raw JSON ticks into a standardized *57-Column Numeric Feature Matrix* via `pandas`/`numpy`.
+- **Probabilistic Core:** An `XGBoost` classifier predicting `BUY_CE`, `BUY_PE`, or `WAIT`. Trained strictly on historically back-tested Supabase ledger data.
+- **Deterministic Check-Valve:** A 25-step rule-based `signal_engine` acts as an absolute governor. If the XGBoost model confidence falls below the strict `>0.82` threshold, the classical Rules Engine takes command, utilizing ADX, SuperTrend, and Gamma levels to secure capital.
 
-1. ✅ **TOTP auto-generation** — using n8n's built-in TOTP node
-2. ✅ **Angel One login** — auto-authenticates for candle data
-3. ✅ **Candle data fetching** — 5-min candles from Angel One
-4. ✅ **Spot & VIX** — via TradingView (free, no auth needed)
-5. ✅ **Technical analysis** — 21 indicators calculated in-workflow
-6. ✅ **Writers Zone** — premium-based analysis from Dhan option chain
-7. ✅ **Signal generation** — weighted scoring with repeat protection
-8. ✅ **Signal logging** — to Google Sheets (Dhan_Signals sheet)
-9. ✅ **Order preparation** — ATM option selection for NIFTY
-10. ✅ **Order placement** — via Dhan API
-11. ✅ **SL & Target** — auto-calculated (12pt SL, 25pt target)
-12. ✅ **Trade logging** — Active trades + summary to Sheets
-13. ✅ **Google Sheets integration** — service account configured
+### C. Execution & Risk Routing
+- **Latency Optimization:** Order logic bypasses intermediate states by compiling Bracket payloads natively in n8n and executing via direct Dhan REST APIs.
+- **Atomic SL/Target Lock:** Stop Losses (-12 pts) and Targets (+25 pts) are never assumed. They are strictly calculated off the **actual exchange-returned fill price** to nullify latency slippage discrepancies.
 
-## Critical Issues Found 🚨
+---
 
-### 🔴 Issue 1: VIX Filter is BYPASSED
-The VIX Filter node routes BOTH true AND false outputs to "Download file":
-```json
-"VIX Filter Condition (< 18)": {
-  "main": [
-    [{ "node": "Download file" }],   // TRUE path → continues
-    [{ "node": "Download file" }]    // FALSE path → ALSO continues!
-  ]
-}
-```
-**Impact:** Trades execute even when VIX > 18 (high volatility = dangerous)
+## 2. Strategic Logic & AI Processing Models
 
-### 🔴 Issue 2: Hardcoded Dhan Access Tokens
-Multiple nodes have the Dhan JWT token hardcoded directly:
-- `NIFTY Option Chain Builder` — has token in JS code
-- `Option Chain Request` — hardcoded in headers
-- `Place Entry Order` — hardcoded in headers
-- `Get Order Status` — has a DIFFERENT (possibly expired) token
-- `Place Stop Loss` — hardcoded token
-- `Place Target Order` — hardcoded token
+The system is designed not just to trade, but to understand market regimes and gracefully abstain from low-probability environments.
 
-**Impact:** When tokens expire, entire workflow breaks silently
+### A. The 'WAIT' Intelligence State
+Traditional bots bleed capital in sideways chop. Zenith is explicitly trained to categorize "Ranging" price action.
+- **VIX Guard:** Hard system lock if India VIX > 25.
+- **ADX Penalty Ladder:** If ADX < 20, Total Confidence is aggressively throttled (`score × 0.5`), forcing the system into the `SIDEWAYS` preservation state.
+- **Volume Phantom-Flip:** Momentum indicators are ignored if they lack corresponding volume expansions, eliminating "fake-outs."
 
-### 🔴 Issue 3: Hardcoded Option Chain Expiry
-```json
-"Option Chain Request" body: { "Expiry": "2025-09-09" }
-```
-**Impact:** After Sep 9, 2025 this stops fetching valid data
+### B. Feature Matrix (The 57 Nodes)
+The AI does not look at "crossovers"; it analyzes environmental geometry:
+1. **Derivatives Matrix:** Gamma Exposure (GEX), Implied Volatility (IV) Skew, Put-Call Ratio (PCR).
+2. **Momentum Matrix:** Divergence algorithms mapping RSI against trailing MACD histograms.
+3. **Temporal Decay:** Time-of-day constraints penalize signals after 14:30 IST to combat theta decay in options premiums.
 
-### 🔴 Issue 4: SL & Target Orders Have WRONG Body
-Place Stop Loss and Place Target bodies use hardcoded `securityId: "39856"` 
-instead of dynamic values from `Calculate SL & Target`:
-```json
-"securityId": "39856"  // ← HARDCODED! Should be dynamic
-```
-**Impact:** SL and Target placed on wrong instrument!
+---
 
-### 🔴 Issue 5: Signal Thresholds Too Aggressive
-```js
-const BUY_THRESHOLD = 0;    // ANY positive = BUY CE
-const SELL_THRESHOLD = -0;   // ANY negative = BUY PE
-```
-**Impact:** Even a +1 confidence score triggers a trade. No minimum conviction.
+## 3. Data Science & UI Design System
 
-### 🟡 Issue 6: No WAIT/AVOID Gate Before Order Placement
-`Prepare Dhan Order` returns `{ status: "SKIPPED" }` for WAIT/AVOID, but the 
-flow still continues to `Place Entry Order` which will fail on invalid data.
-Need an IF node between Prepare and Place.
+### A. Persistent Memory (Supabase PostgreSQL)
+Supabase provides hyper-responsive data streams while serving as the training ground for the AI.
+- **Signals Ledger:** 64 columns capturing the exact market snapshot at the moment of inference.
+- **Automated ML Pipeline:** The `ml_training_export` SQL View strips out categorical noise, feeding a mathematically pure array directly into `api/scripts/train_model.py`.
 
-### 🟡 Issue 7: No Exit Order Monitor
-There's no second workflow to monitor if SL or Target gets hit and cancel 
-the opposite order. Both remain open until market close.
+### B. Command Center Layout (React/TypeScript)
+- **Aesthetic:** Quantum Dark glassmorphism. Intentionally designed to reduce cognitive load via muted slate backgrounds (`#070b14`) and stark, high-contrast typography (Inter / JetBrains Mono).
+- **Reactive State:** Powered by `useTrading.ts`, utilizing asynchronous polling to maintain live 1-to-1 parity with the Supabase PostgreSQL ledger.
 
-### 🟡 Issue 8: No Daily Loss Limit
-No check to see if daily losses exceeded maximum before placing new trades.
+---
 
-### 🟡 Issue 9: No Paper Trading Mode
-Orders go directly to Dhan. No way to test without real money.
+## 4. Master Development Plan (Road to v5.0)
 
-### 🟡 Issue 10: Angel One Credentials in Plaintext
-```json
-"X-PrivateKey": "1URTDXkr",
-"clientcode": "K589212",
-"password": "2323"
-```
-Should use n8n environment variables.
+This is the strategic roadmap for expanding Zenith from a high-performance bot into an institutional-grade algorithmic desk.
 
-## Development Plan — Priority Order
+| Phase | Vector | Strategic Goal / Implementation Detail |
+|---|---|---|
+| **Phase 1** | **Dynamic Capital Scaling** | Implement logic to scale lot sizes based on (a) Account Equity, and (b) XGBoost Probability Score. (e.g., 90% confidence = 2 lots, 75% = 1 lot). |
+| **Phase 2** | **Sentiment Matrix Integration** | Expand the 57-feature model to 60+ features by pulling FII/DII End-of-Day positioning and correlating it with Intraday PCR shifts. |
+| **Phase 3** | **Local Architecture Hardening** | Fully containerize the Python AI Engine and React Desktop environment via Docker for robust, 100% local operation without external cloud dependencies. Guarantee sub-80ms local execution without data leaving the machine. |
+| **Phase 4** | **Paper-Trading Simulator** | Build a strict execution switch in the React Dashboard that isolates the Dhan API endpoints, allowing the engine to run live and write to Supabase, but faking order execution for risk-free forward-testing. |
+| **Phase 5** | **Self-Healing ML Operations** | Automate the executing of `train_model.py` every Friday after market close. If validation accuracy exceeds the current baseline, automatically serialize and swap the `model.pkl` in production. |
 
-### Phase 1: Fix Critical Bugs (Do First!) 🔴
-
-| # | Fix | Effort | Impact |
-|---|-----|--------|--------|
-| 1.1 | Fix VIX Filter — remove false path to Download | 5 min | Prevents trading in high volatility |
-| 1.2 | Fix SL & Target order bodies — use dynamic values | 15 min | SL/Target placed on correct instrument |
-| 1.3 | Add IF node after Prepare Order — skip WAIT/AVOID | 10 min | Prevents invalid order attempts |
-| 1.4 | Raise signal thresholds (≥15 / ≤-15) | 5 min | Fewer false signals |
-| 1.5 | Make Option Chain expiry dynamic | 10 min | Works beyond Sep 2025 |
-| 1.6 | Move credentials to env variables | 15 min | Security best practice |
-
-### Phase 2: Token Management
-
-| # | Task | Effort |
-|---|------|--------|
-| 2.1 | Centralize Dhan token in env variable | 15 min |
-| 2.2 | Add token refresh mechanism (or use single var) | 30 min |
-| 2.3 | Reference `{{$env.DHAN_ACCESS_TOKEN}}` in all nodes | 15 min |
-
-### Phase 3: Add Missing Workflow Components
-
-| # | Component | Effort |
-|---|-----------|--------|
-| 3.1 | Exit Order Monitor workflow (cancel opposite on fill) | 1 hour |
-| 3.2 | Daily loss limit check before order placement | 30 min |
-| 3.3 | Paper trading mode (simulate instead of real orders) | 45 min |
-| 3.4 | Error handling with retry on API failures | 30 min |
-
-### Phase 4: Connect Frontend Dashboard
-
-| # | Task | Effort |
-|---|------|--------|
-| 4.1 | Build API bridge to read Google Sheets | 2 hours |
-| 4.2 | Replace mock data with real Sheets data | 2 hours |
-| 4.3 | Live signal updates via polling | 1 hour |
-
-## Google Sheets Structure (Already Configured)
-
-**Sheet ID:** `1aTMH5Yz28X_NA6lZgtjQzc7jlu9hiAPVVuf1ASTBQoU`
-
-| Sheet Name | Purpose | Columns |
-|------------|---------|---------|
-| `Dhan_Signals` | Signal log | Timestamp, Signal, Confidence, RSI, MACD, VIX, Writers Zone, Spot Price, etc. |
-| `Dhan_Active_Trades` | Open positions | Entry Order ID, SL/Target Order IDs, Prices, Status, PnL |
-| `Dhan_Trade_Summary` | Trade history | Full trade details with exit info |
-
-## Technical Indicators Calculated (21 total)
-
-1. RSI (14) — Overbought/Oversold
-2. EMA20 — Trend direction
-3. SMA50 — Longer trend
-4. MACD — Momentum crossover
-5. VIX — Market volatility
-6. Bollinger Bands — Breakout detection
-7. ATR (14) — Volatility measure
-8. ADX (14) — Trend strength
-9. Stochastic — Momentum oscillator
-10. VWAP — Institutional fair value
-11. CCI — Commodity Channel Index
-12. SuperTrend — Trend following
-13. OBV — On-Balance Volume
-14. Aroon — Trend start detection
-15. Parabolic SAR — Trend reversal
-16. MFI — Money Flow Index
-17. Candlestick Patterns (11 patterns) — Price action
-18. Price Action Score — Swing analysis
-19. Volume Spike Detection — Unusual volume
-20. Volume Strength Score — OBV + spike confirmation
-21. Writers Zone (premium analysis) — Option premium analysis
+---
+*“Systems do not rise to the level of their expectations; they fall to the level of their design.”*

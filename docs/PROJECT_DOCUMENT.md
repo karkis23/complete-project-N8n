@@ -74,27 +74,17 @@ graph TD
 ```
 
 ---
-│                                         ↓                       ↓    │
-│                               ┌──────────────┐      ┌────────────┐  │
-│                               │ Place Stop   │      │ Place      │  │
-│                               │ Loss Order   │      │ Target     │  │
-│                               └──────────────┘      └────────────┘  │
-│                                         │                       │    │
-│                                         └───────────┬───────────┘    │
-│                                                     ↓                │
-│                                         ┌─────────────────────┐     │
-│                                         │ Log Active Trade     │     │
-│                                         │ Log Trade Summary    │     │
-│                                         │ → Supabase (PostgreSQL)│     │
-│                                         └─────────────────────┘     │
-└─────────────────────────────────────────────────────────────────────┘
-                                      │
-                          ┌───────────┴──────────┐
-                          ↓                      ↓
-               ┌─────────────────┐    ┌──────────────────────┐
-               │  Supabase DB    │    │  React Dashboard      │
-               │  (3 sheets)     │←──→│  (localhost:5173)     │
-               └─────────────────┘    └──────────────────────┘
+### Execution & Logging Flow
+```mermaid
+graph TD
+    Fill["Entry Order Fill"] --> SL["Place Stop Loss Order"]
+    Fill --> TG["Place Target Order"]
+    
+    SL --> Log["Log Active Trade & Trade Summary"]
+    TG --> Log
+    
+    Log --> DB[("Supabase DB (PostgreSQL)")]
+    DB <--> UI["React Dashboard (localhost:5173)"]
 ```
 
 ---
