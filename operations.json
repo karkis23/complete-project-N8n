@@ -1,0 +1,277 @@
+[
+  {
+    "type": "updateNode",
+    "nodeName": "Log Signal to Supabase",
+    "nodeConfig": {
+      "parameters": {
+        "tableId": "signals",
+        "fieldsUi": {
+          "fieldValues": [
+            {
+              "fieldId": "timestamp",
+              "fieldValue": "={{new Date().toISOString()}}"
+            },
+            {
+              "fieldId": "engine_version",
+              "fieldValue": "={{ $json.engineVersion || '4.0.0' }}"
+            },
+            {
+              "fieldId": "engine_mode",
+              "fieldValue": "={{ $json.engine_mode }}"
+            },
+            {
+              "fieldId": "spot_price",
+              "fieldValue": "={{ $node['NIFTY Option Chain Builder1'].json.spotPrice }}"
+            },
+            {
+              "fieldId": "atm_strike",
+              "fieldValue": "={{ $node['NIFTY Option Chain Builder1'].json.atmStrike }}"
+            },
+            {
+              "fieldId": "vix",
+              "fieldValue": "={{ $json.VIX }}"
+            },
+            {
+              "fieldId": "vix_multiplier",
+              "fieldValue": "={{ $json.vixMultiplier }}"
+            },
+            {
+              "fieldId": "combined_multiplier",
+              "fieldValue": "={{ $json.combinedMultiplier }}"
+            },
+            {
+              "fieldId": "session_progress",
+              "fieldValue": "={{ $json.session_progress }}"
+            },
+            {
+              "fieldId": "session_date",
+              "fieldValue": "={{ $json.sessionDate }}"
+            },
+            {
+              "fieldId": "volatility_atr",
+              "fieldValue": "={{ $json.volatility_atr }}"
+            },
+            {
+              "fieldId": "price_action_score",
+              "fieldValue": "={{ $json.Price_action_score }}"
+            },
+            {
+              "fieldId": "market_strength",
+              "fieldValue": "={{ $json.market_strength }}"
+            },
+            {
+              "fieldId": "poc_distance",
+              "fieldValue": "={{ $json.poc_distance }}"
+            },
+            {
+              "fieldId": "pa_type",
+              "fieldValue": "={{ $json.PA_Type }}"
+            },
+            {
+              "fieldId": "rsi",
+              "fieldValue": "={{ $json.RSI }}"
+            },
+            {
+              "fieldId": "momentum",
+              "fieldValue": "={{ $json.Momentum }}"
+            },
+            {
+              "fieldId": "volume_ratio",
+              "fieldValue": "={{ $json.VolumeRatio }}"
+            },
+            {
+              "fieldId": "adx",
+              "fieldValue": "={{ $json.ADX }}"
+            },
+            {
+              "fieldId": "plus_di",
+              "fieldValue": "={{ $json.plus_di }}"
+            },
+            {
+              "fieldId": "minus_di",
+              "fieldValue": "={{ $json.minus_di }}"
+            },
+            {
+              "fieldId": "macd",
+              "fieldValue": "={{ $json.macd }}"
+            },
+            {
+              "fieldId": "macd_flip",
+              "fieldValue": "={{ $json.MACDFlip }}"
+            },
+            {
+              "fieldId": "macd_status",
+              "fieldValue": "={{ $json.MACD_status }}"
+            },
+            {
+              "fieldId": "super_trend",
+              "fieldValue": "={{ $json.SuperTrend }}"
+            },
+            {
+              "fieldId": "supertrend_validated",
+              "fieldValue": "={{ $json.SuperTrendValidated }}"
+            },
+            {
+              "fieldId": "stochastic",
+              "fieldValue": "={{ $json.stochastic }}"
+            },
+            {
+              "fieldId": "cci",
+              "fieldValue": "={{ $json.cci }}"
+            },
+            {
+              "fieldId": "mfi",
+              "fieldValue": "={{ $json.mfi }}"
+            },
+            {
+              "fieldId": "bb_width",
+              "fieldValue": "={{ $json.bb_width }}"
+            },
+            {
+              "fieldId": "aroon_up",
+              "fieldValue": "={{ $json.aroon_up }}"
+            },
+            {
+              "fieldId": "aroon_down",
+              "fieldValue": "={{ $json.aroon_down }}"
+            },
+            {
+              "fieldId": "ema20_distance",
+              "fieldValue": "={{ $json.ema20_distance }}"
+            },
+            {
+              "fieldId": "vwap_status",
+              "fieldValue": "={{ $json.vwap_status }}"
+            },
+            {
+              "fieldId": "candle_pattern",
+              "fieldValue": "={{ $json.candlePatterns ? $json.candlePatterns.join(', ') : '' }}"
+            },
+            {
+              "fieldId": "candle_count",
+              "fieldValue": "={{ $json.candle_count }}"
+            },
+            {
+              "fieldId": "today_candle_count",
+              "fieldValue": "={{ $json.today_candle_count }}"
+            },
+            {
+              "fieldId": "orb_range",
+              "fieldValue": "={{ JSON.stringify($json.orbRange || {}) }}"
+            },
+            {
+              "fieldId": "put_call_ratio",
+              "fieldValue": "={{ $json.putCallOIRatio }}"
+            },
+            {
+              "fieldId": "put_call_premium_ratio",
+              "fieldValue": "={{ $json.putCallPremiumRatio }}"
+            },
+            {
+              "fieldId": "writers_zone",
+              "fieldValue": "={{ $json.writersZone }}"
+            },
+            {
+              "fieldId": "writers_confidence",
+              "fieldValue": "={{ $json.writersConfidence }}"
+            },
+            {
+              "fieldId": "max_pain",
+              "fieldValue": "={{ $json.maxPain }}"
+            },
+            {
+              "fieldId": "max_ce_oi_strike",
+              "fieldValue": "={{ $json.maxCEOIStrike }}"
+            },
+            {
+              "fieldId": "max_pe_oi_strike",
+              "fieldValue": "={{ $json.maxPEOIStrike }}"
+            },
+            {
+              "fieldId": "gamma_exposure",
+              "fieldValue": "={{ JSON.stringify($json.gammaExposure || {}) }}"
+            },
+            {
+              "fieldId": "Gamma_Flip Level",
+              "fieldValue": "={{ $json.gammaExposure?.gamma_flip }}"
+            },
+            {
+              "fieldId": "GEX_Regime",
+              "fieldValue": "={{ $json.gammaExposure?.regime }}"
+            },
+            {
+              "fieldId": "iv_skew",
+              "fieldValue": "={{ JSON.stringify($json.ivSkew || {}) }}"
+            },
+            {
+              "fieldId": "IV_skew_bias",
+              "fieldValue": "={{ $json.ivSkew?.bias }}"
+            },
+            {
+              "fieldId": "regime",
+              "fieldValue": "={{ $json.regime }}"
+            },
+            {
+              "fieldId": "raw_signal",
+              "fieldValue": "={{ $json.rawSignal }}"
+            },
+            {
+              "fieldId": "signal",
+              "fieldValue": "={{ $json.finalSignal }}"
+            },
+            {
+              "fieldId": "confidence",
+              "fieldValue": "={{ $json.confidence }}"
+            },
+            {
+              "fieldId": "reason",
+              "fieldValue": "={{ $json.reason }}"
+            },
+            {
+              "fieldId": "ai_insights",
+              "fieldValue": "={{ $json.ai_insights ? $json.ai_insights.join(' | ') : '' }}"
+            },
+            {
+              "fieldId": "blocked_reason",
+              "fieldValue": "={{ $json.blockedReason }}"
+            },
+            {
+              "fieldId": "streak_count",
+              "fieldValue": "={{ $json.streakCount }}"
+            },
+            {
+              "fieldId": "streak_confirmed",
+              "fieldValue": "={{ $json.streakConfirmed }}"
+            },
+            {
+              "fieldId": "LastSignal",
+              "fieldValue": "={{ $json.lastSignal }}"
+            },
+            {
+              "fieldId": "LastFireTime",
+              "fieldValue": "={{ $json.lastFireTime }}"
+            },
+            {
+              "fieldId": "debug_flags",
+              "fieldValue": "={{ $json.debugFlags ? $json.debugFlags.join(', ') : '' }}"
+            }
+          ]
+        }
+      },
+      "id": "22936299-9c07-41c4-8d6e-4dbf94559274",
+      "name": "Log Signal to Supabase",
+      "type": "n8n-nodes-base.supabase",
+      "typeVersion": 1,
+      "position": [
+        32,
+        -160
+      ],
+      "credentials": {
+        "supabaseApi": {
+          "id": "aeuolv0JKstQoY5l",
+          "name": "Supabase account"
+        }
+      }
+    }
+  }
+]

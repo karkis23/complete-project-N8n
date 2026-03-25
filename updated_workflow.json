@@ -1,0 +1,1687 @@
+{
+  "nodes": [
+    {
+      "parameters": {
+        "conditions": {
+          "number": [
+            {
+              "value1": "={{ (new Date().getUTCHours() + 5.5) % 24 }}",
+              "operation": "largerEqual",
+              "value2": 9.25
+            },
+            {
+              "value1": "={{ (new Date().getUTCHours() + 5.5) % 24 }}",
+              "operation": "smallerEqual",
+              "value2": 15.5
+            }
+          ]
+        }
+      },
+      "id": "03e3ea70-e3e2-4f79-8b77-819511892ca3",
+      "name": "Trading Hour Filter1",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 1,
+      "position": [
+        -2880,
+        -160
+      ]
+    },
+    {
+      "parameters": {
+        "options": {
+          "algorithm": "SHA1",
+          "digits": 6,
+          "period": 30
+        }
+      },
+      "type": "n8n-nodes-base.totp",
+      "typeVersion": 1,
+      "position": [
+        -2656,
+        -160
+      ],
+      "id": "b2f2cd45-a4a9-47dc-aae8-104eafee7c48",
+      "name": "TOTP Auth1",
+      "credentials": {
+        "totpApi": {
+          "id": "Wlx8jlr0zQwl5qMk",
+          "name": "TOTP account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://apiconnect.angelbroking.com/rest/auth/angelbroking/user/v1/loginByPassword",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Accept",
+              "value": "application/json"
+            },
+            {
+              "name": "X-UserType",
+              "value": "USER"
+            },
+            {
+              "name": "X-SourceID",
+              "value": "WEB"
+            },
+            {
+              "name": "X-ClientLocalIP",
+              "value": "192.168.1.2"
+            },
+            {
+              "name": "X-ClientPublicIP",
+              "value": "106.222.221.76"
+            },
+            {
+              "name": "X-MACAddress",
+              "value": "10-5F-AD-60-7A-ED"
+            },
+            {
+              "name": "X-PrivateKey",
+              "value": "1URTDXkr"
+            },
+            {
+              "name": "X-PrivateKey\t",
+              "value": "1URTDXkr"
+            }
+          ]
+        },
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "clientcode",
+              "value": "K589212"
+            },
+            {
+              "name": "password",
+              "value": "2323"
+            },
+            {
+              "name": "totp",
+              "value": "={{ $json.token }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "0af5c979-b69d-4f0a-b899-b120e282c56f",
+      "name": "Angel One Login(Token)1",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4,
+      "position": [
+        -2432,
+        -160
+      ],
+      "alwaysOutputData": false
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://apiconnect.angelbroking.com/rest/secure/angelbroking/historical/v1/getCandleData",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Content-Type\t",
+              "value": "application/json"
+            },
+            {
+              "name": "Accept",
+              "value": "application/json"
+            },
+            {
+              "name": "X-UserType\t",
+              "value": "USER"
+            },
+            {
+              "name": "X-SourceID\t",
+              "value": "WEB"
+            },
+            {
+              "name": "X-ClientLocalIP\t",
+              "value": "192.168.1.2"
+            },
+            {
+              "name": "X-ClientPublicIP\t",
+              "value": "106.222.221.76"
+            },
+            {
+              "name": "X-MACAddress\t",
+              "value": "10-5F-AD-60-7A-ED"
+            },
+            {
+              "name": "X-PrivateKey\t",
+              "value": "1URTDXkr"
+            },
+            {
+              "name": "Authorization\t",
+              "value": "=Bearer {{$node['Angel One Login(Token)1'].json['data']['jwtToken']}}"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"exchange\": \"NSE\",\n  \"symboltoken\": \"99926000\",\n  \"interval\": \"FIVE_MINUTE\",\n  \"fromdate\":  \"{{ (() => { const d = new Date(); d.setDate(d.getDate() - 3); return d.toISOString().split('T')[0] + ' 09:15'; })() }}\",\n   \"todate\":\"{{ $now.format('yyyy-MM-dd HH:mm') }}\"\n\n}\n\n",
+        "options": {}
+      },
+      "id": "867e7669-fd06-4230-83d9-56dc7a947a54",
+      "name": "Get 5Mins Candles1",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4,
+      "position": [
+        -2208,
+        -160
+      ]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://scanner.tradingview.com/india/scan",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Content-Type\t",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "{\n  \"symbols\": {\n    \"tickers\": [\"NSE:NIFTY\"]\n  },\n  \"columns\": [\"close\"]\n}\n",
+        "options": {
+          "response": {
+            "response": {
+              "responseFormat": "json"
+            }
+          }
+        }
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        -1984,
+        -160
+      ],
+      "id": "7afb29ed-97a9-461f-9499-334882db5261",
+      "name": "NIFTY Spot (LTP)1"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://scanner.tradingview.com/india/scan",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "{\n  \"symbols\": {\n    \"tickers\": [\"NSE:INDIAVIX\"]\n  },\n  \"columns\": [\"close\"]\n}\n",
+        "options": {
+          "response": {
+            "response": {
+              "responseFormat": "json"
+            }
+          }
+        }
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        -1760,
+        -160
+      ],
+      "id": "fa9d3985-fd7c-41cf-91ff-a1566ff0cf95",
+      "name": "INDIA VIX Spot1"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "number": [
+            {
+              "value1": "={{ $json.data[0].d[0] }}",
+              "value2": 18
+            }
+          ]
+        }
+      },
+      "id": "38f2609c-7017-42b8-beb5-878f70351704",
+      "name": "VIX Filter Condition (< 18)1",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 1,
+      "position": [
+        -1536,
+        -160
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "if (!Array.isArray(items)) {\n  throw new Error(\"Invalid input\");\n}\n\nconst allOptions = items.map(item => item.json);\n\n// \u2705 1. Get spot price\nconst spot = $('NIFTY Spot (LTP)1').first().json.data[0].d[0];\n\n// \u2705 2. Find ATM strike \u2014 using correct field name SEM_STRIKE_PRICE\nconst uniqueStrikes = [...new Set(allOptions.map(opt => opt.SEM_STRIKE_PRICE))];\nconst nearestStrike = uniqueStrikes.reduce((prev, curr) =>\n  Math.abs(curr - spot) < Math.abs(prev - spot) ? curr : prev\n);\n\n// \u2705 3. Filter CE/PE for nearestStrike \u2014 using correct field names\nconst atmOptions = allOptions.filter(opt =>\n  opt.SEM_STRIKE_PRICE === nearestStrike &&\n  (opt.SEM_OPTION_TYPE === 'CE' || opt.SEM_OPTION_TYPE === 'PE')\n);\n\n// \u2705 4. Group by expiry and pick earliest \u2014 using correct field name SEM_EXPIRY_DATE\nconst expiryMap = {};\nfor (const opt of atmOptions) {\n  if (!expiryMap[opt.SEM_EXPIRY_DATE]) {\n    expiryMap[opt.SEM_EXPIRY_DATE] = [];\n  }\n  expiryMap[opt.SEM_EXPIRY_DATE].push(opt);\n}\n\n// \u2705 Fix: Parse \"DD-Mon-YYYY\" dates correctly for sorting\nconst monthMap = {\n  Jan:0, Feb:1, Mar:2, Apr:3, May:4, Jun:5,\n  Jul:6, Aug:7, Sep:8, Oct:9, Nov:10, Dec:11\n};\n\nconst parseExpiry = (dateStr) => {\n  const parts = dateStr.split('-'); // [\"25\", \"Jul\", \"2025\"]\n  return new Date(parseInt(parts[2]), monthMap[parts[1]], parseInt(parts[0]));\n};\n\nconst sortedExpiries = Object.keys(expiryMap).sort((a, b) =>\n  parseExpiry(a) - parseExpiry(b)\n);\n\nconst nearestExpiryOptions = expiryMap[sortedExpiries[0]] || [];\n\n// \u2705 5. Format output \u2014 using correct field names\nreturn nearestExpiryOptions.map(opt => ({\n  json: {\n    strike: opt.SEM_STRIKE_PRICE,\n    optionType: opt.SEM_OPTION_TYPE,\n    symbol: `NIFTY-${opt.SEM_EXPIRY_DATE}-${opt.SEM_STRIKE_PRICE}-${opt.SEM_OPTION_TYPE}`,\n    securityCode: opt.SEM_SMST_SECURITY_ID,\n    lotSize: opt.SEM_LOT_UNITS || 75,\n    expiry: opt.SEM_EXPIRY_DATE\n  }\n}));"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -864,
+        -160
+      ],
+      "id": "1f237d36-9828-480c-a680-3089129f3514",
+      "name": "Parse master Copy1",
+      "alwaysOutputData": false
+    },
+    {
+      "parameters": {
+        "jsCode": "// ============================================================\n// NIFTY Option Chain Builder \u2014 Final Version\n// Expiry: Tuesday-based (NSE rule since Sep 1, 2025)\n// ============================================================\n\n// \u2705 1. Read pre-filtered option data\nconst rows = $items(\"Parse master Copy1\").map(item => item.json);\n\n// \u2705 2. Spot Price\nconst spotJson = $node[\"NIFTY Spot (LTP)1\"].json;\nconst spotPrice = parseFloat(spotJson?.data?.[0]?.d?.[0]);\nif (isNaN(spotPrice)) throw new Error(\"\u274c Spot price missing or invalid.\");\n\n// \u2705 3. Access Token\nconst accessToken = \"eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzUxMiJ9.eyJpc3MiOiJkaGFuIiwicGFydG5lcklkIjoiIiwiZXhwIjoxNzc0Mzg3MzU0LCJpYXQiOjE3NzQzMDA5NTQsInRva2VuQ29uc3VtZXJUeXBlIjoiU0VMRiIsIndlYmhvb2tVcmwiOiIiLCJkaGFuQ2xpZW50SWQiOiIxMTA3ODQzMTc0In0.HKiV1O5MO6rTu0g2ACizDD3t32Z9YZTLhOrIc51D4V5bJAEHqWyPi7YyQMiu3SMKcF_ns8YM7-L6lMc-bIpnCA\";\n\n// \u2705 4. NSE Holidays 2026 that fall on Tuesday (expiry shifts to Monday)\nconst nseHolidays = new Set([\n  \"2026-03-03\", // Holi           \u2192 shifts to 2026-03-02 (Mon)\n  \"2026-03-31\", // Mahavir Jayanti\u2192 shifts to 2026-03-30 (Mon)\n  \"2026-04-14\", // Ambedkar Day   \u2192 shifts to 2026-04-13 (Mon)\n  \"2026-10-20\", // Dussehra       \u2192 shifts to 2026-10-19 (Mon)\n  \"2026-11-10\", // Diwali         \u2192 shifts to 2026-11-09 (Mon)\n  \"2026-11-24\", // Guru Nanak     \u2192 shifts to 2026-11-23 (Mon)\n]);\n\n// \u2705 5. Compute next active NIFTY expiry (Tuesday-based since Sep 2025)\nfunction getNextNiftyExpiry() {\n  const now = new Date();\n\n  // Work in IST (UTC+5:30)\n  const IST_OFFSET_MS = 5.5 * 60 * 60 * 1000;\n  const ist = new Date(now.getTime() + IST_OFFSET_MS);\n\n  const day = ist.getUTCDay();           // 0=Sun, 1=Mon, 2=Tue ... 6=Sat\n  const hours = ist.getUTCHours();       // IST hours in UTC terms\n  const minutes = ist.getUTCMinutes();\n\n  // Market closes at 15:30 IST = 10:00 UTC\n  const marketClosed = (hours > 10) || (hours === 10 && minutes >= 0);\n\n  // Days until next Tuesday\n  let daysToTuesday = (2 - day + 7) % 7;\n\n  // If today IS Tuesday AND market is already closed \u2192 this week's expiry is done\n  if (daysToTuesday === 0 && marketClosed) {\n    daysToTuesday = 7; // jump to next Tuesday\n  }\n\n  // Compute the expiry date\n  const expiry = new Date(ist);\n  expiry.setUTCDate(ist.getUTCDate() + daysToTuesday);\n\n  // Format as YYYY-MM-DD (plain string \u2014 avoids n8n #### masking)\n  const yyyy = expiry.getUTCFullYear();\n  const mm = String(expiry.getUTCMonth() + 1).padStart(2, '0');\n  const dd = String(expiry.getUTCDate()).padStart(2, '0');\n  let expiryStr = `${yyyy}-${mm}-${dd}`;\n\n  // If it's an NSE holiday \u2192 shift back to preceding Monday\n  if (nseHolidays.has(expiryStr)) {\n    expiry.setUTCDate(expiry.getUTCDate() - 1);\n    const dd2 = String(expiry.getUTCDate()).padStart(2, '0');\n    expiryStr = `${yyyy}-${mm}-${dd2}`;\n  }\n\n  return expiryStr; // Always returns clean \"YYYY-MM-DD\" string\n}\n\n// \u2705 6. Get expiry as clean string (never from rows to avoid format issues)\nconst expiryDateStr = getNextNiftyExpiry();\n\n// \u2705 7. ATM Strike (NIFTY rounds to nearest 50)\nconst atmStrike = Math.round(spotPrice / 50) * 50;\n\n// \u2705 8. Sort rows by distance from ATM, pick top 10 CE & PE\nrows.forEach(row => {\n  row.strike = parseFloat(row.strike);\n  row.distanceFromATM = Math.abs(row.strike - atmStrike);\n});\nrows.sort((a, b) => a.distanceFromATM - b.distanceFromATM);\n\nconst ceOptions = rows.filter(row => row.optionType === 'CE').slice(0, 10);\nconst peOptions = rows.filter(row => row.optionType === 'PE').slice(0, 10);\n\n// \u2705 9. Fetch LTP from Dhan API\nasync function getLTP(securityId) {\n  try {\n    const res = await fetch(\n      `https://api.dhan.co/v2/marketfeed/ltp?securityId=${securityId}&exchangeSegment=NSE_FNO&instrument=OPTIDX`,\n      {\n        headers: {\n          'access-token': accessToken,\n          'Content-Type': 'application/json'\n        }\n      }\n    );\n    if (res.ok) {\n      const data = await res.json();\n      return data?.data?.LTP ?? 0;\n    }\n  } catch (err) {\n    console.error(`\u274c LTP fetch failed for ${securityId}:`, err.message);\n  }\n  return 0;\n}\n\n// \u2705 10. Append LTP to each option\nconst ceWithLTP = [];\nconst peWithLTP = [];\n\nfor (const option of ceOptions) {\n  const ltp = await getLTP(option.securityCode);\n  ceWithLTP.push({ ...option, ltp });\n}\n\nfor (const option of peOptions) {\n  const ltp = await getLTP(option.securityCode);\n  peWithLTP.push({ ...option, ltp });\n}\n\n// \u2705 11. Final output\nreturn {\n  spotPrice,\n  atmStrike,\n  expiry: expiryDateStr,          // e.g. \"2026-03-02\" \u2014 always clean string\n  ceOptions: ceWithLTP,\n  peOptions: peWithLTP,\n  totalOptionsFound: rows.length,\n  timestamp: new Date().toISOString(),\n  token: accessToken\n};\n"
+      },
+      "id": "7fe6a394-ea9f-45b9-a2ce-9c28c1f08dcf",
+      "name": "NIFTY Option Chain Builder1",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -640,
+        -160
+      ]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.dhan.co/v2/optionchain",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            },
+            {
+              "name": "access-token",
+              "value": "={{ $json.token }}"
+            },
+            {
+              "name": "client-id",
+              "value": "1107843174"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n \"UnderlyingScrip\": 13,\n \"UnderlyingSeg\": \"IDX_I\",\n \"Expiry\": \"{{ $json.expiry }}\"\n}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        -416,
+        -160
+      ],
+      "id": "32906eca-6c3c-4ae7-acc4-290a15395df4",
+      "name": "Option Chain Request1",
+      "retryOnFail": false,
+      "waitBetweenTries": 10
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "string": [
+            {
+              "value1": "={{ $('\ud83e\udde0 Call Python AI Engine').item.json.finalSignal }}",
+              "value2": "BUY CALL (CE)"
+            },
+            {
+              "value1": "={{ $('\ud83e\udde0 Call Python AI Engine').item.json.finalSignal }}",
+              "value2": "BUY PUT (PE)"
+            }
+          ]
+        },
+        "combineOperation": "any"
+      },
+      "id": "1a52ff41-4f91-4f96-8300-12fc19b53508",
+      "name": "Signal-Filter3",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 1,
+      "position": [
+        464,
+        -160
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "// ============================================================\n// PREPARE DHAN ORDER \u2014 v3.4 (FINAL SYNC: LTP + SECURITY ID)\n// \u2705 Pulls live LTP AND Security ID from 'Option Chain Request1'\n// ============================================================\n\n// 1. Get Signal Data\nconst signalData = $('\ud83e\udde0 Call Python AI Engine').first().json;\nconst finalSignal = signalData.finalSignal;\n\nif ([\"WAIT\", \"AVOID\", \"SIDEWAYS\"].includes(finalSignal)) {\n    return [{ json: { status: \"SKIPPED\", reason: `Signal is ${finalSignal}`, orderPlaced: false } }];\n}\n\n// 2. Get Data Sources\nconst builder = $('NIFTY Option Chain Builder1').first().json;\nconst ocData = $('Option Chain Request1').first().json?.data || {};\nconst ocMap = ocData.oc || {}; \n\nconst atmStrike = builder.atmStrike;\nconst lotSize = $('Parse master Copy1').first().json.lotSize || 75;\n\n// 3. Determine Side\nconst isCE = finalSignal === 'BUY CALL (CE)';\nconst options = isCE ? builder.ceOptions : builder.peOptions;\n\n// 4. Pick Strike\nlet selectedOption = options.find(opt => opt.strike === atmStrike) || options[0];\n\n// 5. \u2705 CRITICAL: Sync both LTP and Security ID from Option Chain Request1\nconst strikeVal = parseFloat(selectedOption.strike);\nconst strikeKey = strikeVal.toFixed(2);\n// Try multiple formats to ensure we find the key (e.g., \"25200.00\", \"25200\", \"25200.000000\")\nconst liveData = ocMap[strikeKey] || ocMap[strikeVal.toString()] || ocMap[`${strikeVal}.000000`];\n\nif (liveData) {\n    const liveSide = isCE ? liveData.ce : liveData.pe;\n    if (liveSide) {\n        selectedOption.ltp = liveSide.last_price || 0;\n        // \u2705 OVERRIDE THE MISMATCHING ID WITH THE LIVE ONE (e.g., 54904)\n        selectedOption.securityCode = liveSide.security_id.toString();\n    }\n}\n\n// 6. Build Order\nconst dhanOrder = {\n    dhanClientId: \"1107843174\",\n    correlationId: `SIG_${Date.now()}`,\n    transactionType: \"BUY\",\n    exchangeSegment: \"NSE_FNO\",\n    productType: \"INTRADAY\",\n    orderType: \"MARKET\",\n    validity: \"DAY\",\n    securityId: selectedOption.securityCode, // Now correctly uses the live ID\n    quantity: lotSize\n};\n\nreturn [{\n    json: {\n        dhanOrder,\n        selectedOption,\n        finalSignal,\n        ltp: selectedOption.ltp,\n        tradingSymbol: selectedOption.symbol,\n        orderPlaced: true,\n        timestamp: new Date().toISOString()\n    }\n}];\n"
+      },
+      "id": "264040bc-cde3-4141-a3d5-0e9fd02749a5",
+      "name": "Prepare Dhan Order1",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        256,
+        -160
+      ]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "http://0.0.0.0:8000/api/predict",
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "spotLTP",
+              "value": "={{ $('NIFTY Option Chain Builder1').first().json.atmStrike }}"
+            },
+            {
+              "name": "vix",
+              "value": "={{ $('INDIA VIX Spot1').first().json.data[0].d[0] }}"
+            },
+            {
+              "name": "atmStrike",
+              "value": "={{ $('NIFTY Option Chain Builder1').item.json.atmStrike }}"
+            },
+            {
+              "name": "angelOneCandles",
+              "value": "={{ $('Get 5Mins Candles1').first().json.data }}"
+            },
+            {
+              "name": "optionChainRaw",
+              "value": "={{ $json.data.oc }}"
+            },
+            {
+              "name": "currentIST",
+              "value": "={{ new Date().toISOString() }}"
+            },
+            {
+              "name": "sessionDate",
+              "value": "={{ new Date().toISOString().split('T')[0] }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.3,
+      "position": [
+        -192,
+        -160
+      ],
+      "id": "5bd4e56c-5abe-4e49-84c7-19ff57e78273",
+      "name": "\ud83e\udde0 Call Python AI Engine"
+    },
+    {
+      "parameters": {
+        "fileSelector": "C:\\Users\\madhu\\.n8n-files\\scrip-master_NSE_FNO - Sheet1.csv",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.readWriteFile",
+      "typeVersion": 1.1,
+      "position": [
+        -1312,
+        -160
+      ],
+      "id": "ac921cbf-4eee-4440-81ef-4089929d43e4",
+      "name": "Read/Write Files from Disk"
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "n8n-nodes-base.extractFromFile",
+      "typeVersion": 1,
+      "position": [
+        -1088,
+        -160
+      ],
+      "id": "bb84d05c-0ff5-4ce7-bd0d-d5d50c4a0a62",
+      "name": "Extract from File"
+    },
+    {
+      "parameters": {
+        "height": 480,
+        "width": 5344,
+        "color": 7
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        -3248,
+        -336
+      ],
+      "typeVersion": 1,
+      "id": "9f8ee85d-a67a-498f-a539-2315f93aa8be",
+      "name": "Sticky Note"
+    },
+    {
+      "parameters": {
+        "triggerTimes": {
+          "item": [
+            {
+              "mode": "custom",
+              "cronExpression": "*/2 9-15 * * 1-5"
+            }
+          ]
+        }
+      },
+      "id": "b8743eb2-98fb-4151-b9b6-0ea49019754e",
+      "name": "Monitor Every 2 Minutes",
+      "type": "n8n-nodes-base.cron",
+      "typeVersion": 1,
+      "position": [
+        528,
+        480
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "// Enhanced Exit Order Monitor for Dhan API\nconst orderBook = $node['Get Dhan Order Book'].json.data || [];\nconst activeTrades = $node['Get Active Dhan Trades'].json || [];\nconst accessToken = $node['Dhan Authentication1'].json.data.access_token;\n\nconst results = [];\nconst ordersToCancel = [];\nconst tradesToUpdate = [];\nconst notifications = [];\n\n// Process each active trade\nactiveTrades.forEach(tradeRow => {\n  if (tradeRow.Status !== 'ACTIVE') return;\n  \n  const entryOrderId = tradeRow['Entry Order ID'];\n  const slOrderId = tradeRow['SL Order ID'];\n  const targetOrderId = tradeRow['Target Order ID'];\n  const tradingSymbol = tradeRow['Trading Symbol'];\n  const entryPrice = parseFloat(tradeRow['Entry Price']);\n  const quantity = parseInt(tradeRow['Quantity']);\n  \n  // Find these orders in the current order book\n  const slOrder = orderBook.find(order => order.orderId === slOrderId);\n  const targetOrder = orderBook.find(order => order.orderId === targetOrderId);\n  \n  let executedOrder = null;\n  let orderToCancel = null;\n  let exitType = null;\n  let exitPrice = null;\n  let pnl = 0;\n  \n  // Check if SL order is executed\n  if (slOrder && slOrder.orderStatus === 'TRADED') {\n    executedOrder = slOrder;\n    orderToCancel = targetOrderId;\n    exitType = 'STOP_LOSS';\n    exitPrice = parseFloat(slOrder.price);\n    pnl = (exitPrice - entryPrice) * quantity;\n    \n    notifications.push({\n      type: 'STOP_LOSS_HIT',\n      message: `Stop Loss executed for ${tradingSymbol} at \u20b9${exitPrice}`,\n      pnl: pnl,\n      severity: pnl < 0 ? 'HIGH' : 'MEDIUM'\n    });\n  }\n  // Check if Target order is executed\n  else if (targetOrder && targetOrder.orderStatus === 'TRADED') {\n    executedOrder = targetOrder;\n    orderToCancel = slOrderId;\n    exitType = 'TARGET';\n    exitPrice = parseFloat(targetOrder.price);\n    pnl = (exitPrice - entryPrice) * quantity;\n    \n    notifications.push({\n      type: 'TARGET_ACHIEVED',\n      message: `Target achieved for ${tradingSymbol} at \u20b9${exitPrice}`,\n      pnl: pnl,\n      severity: 'LOW'\n    });\n  }\n  // Check for partial executions or pending status changes\n  else {\n    // Monitor for any status changes that might need attention\n    if (slOrder && slOrder.orderStatus === 'REJECTED') {\n      notifications.push({\n        type: 'SL_ORDER_REJECTED',\n        message: `SL order rejected for ${tradingSymbol}`,\n        severity: 'HIGH'\n      });\n    }\n    \n    if (targetOrder && targetOrder.orderStatus === 'REJECTED') {\n      notifications.push({\n        type: 'TARGET_ORDER_REJECTED',\n        message: `Target order rejected for ${tradingSymbol}`,\n        severity: 'HIGH'\n      });\n    }\n  }\n  \n  if (executedOrder && orderToCancel) {\n    // Add order to cancel list\n    ordersToCancel.push({\n      orderId: orderToCancel,\n      tradingSymbol: tradingSymbol\n    });\n    \n    // Calculate additional metrics\n    const riskAmount = Math.abs(entryPrice - parseFloat(tradeRow['Stop Loss']));\n    const rewardAmount = Math.abs(parseFloat(tradeRow['Target']) - entryPrice);\n    const actualRR = exitType === 'TARGET' ? \n      Math.abs(pnl) / (riskAmount * quantity) : \n      -Math.abs(pnl) / (riskAmount * quantity);\n    \n    // Update trade information\n    tradesToUpdate.push({\n      entryOrderId: entryOrderId,\n      exitType: exitType,\n      exitPrice: exitPrice,\n      pnl: Math.round(pnl * 100) / 100,\n      executedOrderId: executedOrder.orderId,\n      actualRiskReward: Math.round(actualRR * 100) / 100,\n      executionTime: executedOrder.updateTime || new Date().toISOString(),\n      timestamp: new Date().toISOString()\n    });\n    \n    results.push({\n      message: `${exitType} executed for ${tradingSymbol}`,\n      entryOrderId: entryOrderId,\n      tradingSymbol: tradingSymbol,\n      exitPrice: exitPrice,\n      pnl: pnl,\n      cancelOrderId: orderToCancel,\n      exitType: exitType\n    });\n  }\n});\n\n// Calculate session statistics\nconst sessionStats = {\n  totalExecutions: results.length,\n  totalPnL: tradesToUpdate.reduce((sum, trade) => sum + trade.pnl, 0),\n  targetHits: tradesToUpdate.filter(t => t.exitType === 'TARGET').length,\n  stopLossHits: tradesToUpdate.filter(t => t.exitType === 'STOP_LOSS').length,\n  avgPnL: tradesToUpdate.length > 0 ? \n    tradesToUpdate.reduce((sum, trade) => sum + trade.pnl, 0) / tradesToUpdate.length : 0\n};\n\nreturn {\n  results,\n  ordersToCancel,\n  tradesToUpdate,\n  notifications,\n  sessionStats,\n  totalExecutions: results.length,\n  timestamp: new Date().toISOString()\n};"
+      },
+      "id": "4a943a82-a7ca-42a0-8d5c-923acf081059",
+      "name": "Analyze Dhan Exit Executions",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1200,
+        480
+      ]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "number": [
+            {
+              "value1": "={{$node['Analyze Dhan Exit Executions'].json.totalExecutions}}",
+              "operation": "larger"
+            }
+          ]
+        }
+      },
+      "id": "aa713283-255a-4afb-bcd5-e5e8fcfdf6be",
+      "name": "Check if Any Exits Executed",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 1,
+      "position": [
+        1424,
+        480
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "const trades = $node['Analyze Dhan Exit Executions'].json.tradesToUpdate || [];\nconst ordersToCancel = $node['Analyze Dhan Exit Executions'].json.ordersToCancel || [];\n\n// Return each trade combined with its corresponding cancellation ID\nreturn trades.map(trade => {\n  const cancelOrder = ordersToCancel.find(o => o.tradingSymbol === trade.tradingSymbol);\n  return {\n    ...trade,\n    cancelOrderId: cancelOrder ? cancelOrder.orderId : null\n  };\n}).filter(t => t.cancelOrderId !== null);"
+      },
+      "id": "8e45bef0-65f6-4300-954c-8a56c3682c68",
+      "name": "Prepare Dhan Order Cancellations",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1648,
+        480
+      ]
+    },
+    {
+      "parameters": {
+        "amount": 3,
+        "unit": "seconds"
+      },
+      "id": "8b552d5b-9e74-411a-84fe-cff192f7c401",
+      "name": "Wait-for-Order-Fill",
+      "type": "n8n-nodes-base.wait",
+      "typeVersion": 1,
+      "position": [
+        1152,
+        -240
+      ],
+      "webhookId": "2086d173-6394-4888-bf60-544b3ade0e86",
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "jsCode": "const orderStatus = $node['Get Order Status'].json.data;\nconst orderData = $node['Prepare Dhan Order1']?.json || {};\n\nif (orderStatus.orderStatus !== 'TRADED') {\n    throw new Error(`Order not executed. Status: ${orderStatus.orderStatus}`);\n}\n\n// Use averageTradedPrice for execution price\nconst fillPrice = parseFloat(orderStatus.averageTradedPrice || orderStatus.price);\nconst quantity = parseInt(orderStatus.quantity);\nconst securityId = orderStatus.securityId;\nconst tradingSymbol = orderData.selectedOption?.tradingSymbol || orderData.selectedOption?.symbol || '';\n\n// Round to 0.05 tick size (required by exchange)\nconst roundToTick = (p) => Math.round(p * 20) / 20;\n\n// ==========================================\n// \ud83c\udfaf SETUP RISK / REWARD IN POINTS (RUPEES)\n// ==========================================\nconst SL_POINTS = 10;     // 10 Rs Stop Loss\nconst TARGET_POINTS = 20; // 20 Rs Take Profit\n\n// Calculate Absolute Prices\nconst stopLossPrice = roundToTick(Math.max(fillPrice - SL_POINTS, 0.05)); // Ensures price doesn't go below 0.05\nconst targetPrice = roundToTick(fillPrice + TARGET_POINTS);\n\nreturn {\n    entryOrderId: orderStatus.orderId,\n    fillPrice, \n    quantity, \n    securityId, \n    tradingSymbol,\n    stopLoss: stopLossPrice,\n    target: targetPrice,\n    riskAmount: Math.round((fillPrice - stopLossPrice) * 100) / 100,\n    rewardAmount: Math.round((targetPrice - fillPrice) * 100) / 100,\n    executionTime: orderStatus.createTime,\n    timestamp: new Date().toISOString()\n};\n"
+      },
+      "id": "6a261e70-f697-4c7c-8f44-74c321c449af",
+      "name": "Calculate SL & Target",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1312,
+        -768
+      ]
+    },
+    {
+      "parameters": {
+        "tableId": "signals",
+        "fieldsUi": {
+          "fieldValues": [
+            {
+              "fieldId": "timestamp",
+              "fieldValue": "={{new Date().toISOString()}}"
+            },
+            {
+              "fieldId": "engine_version",
+              "fieldValue": "={{ $json.engineVersion || '4.0.0' }}"
+            },
+            {
+              "fieldId": "engine_mode",
+              "fieldValue": "={{ $json.engine_mode }}"
+            },
+            {
+              "fieldId": "spot_price",
+              "fieldValue": "={{ $node['NIFTY Option Chain Builder1'].json.spotPrice }}"
+            },
+            {
+              "fieldId": "atm_strike",
+              "fieldValue": "={{ $node['NIFTY Option Chain Builder1'].json.atmStrike }}"
+            },
+            {
+              "fieldId": "vix",
+              "fieldValue": "={{ $json.VIX }}"
+            },
+            {
+              "fieldId": "vix_multiplier",
+              "fieldValue": "={{ $json.vixMultiplier }}"
+            },
+            {
+              "fieldId": "combined_multiplier",
+              "fieldValue": "={{ $json.combinedMultiplier }}"
+            },
+            {
+              "fieldId": "session_progress",
+              "fieldValue": "={{ $json.session_progress }}"
+            },
+            {
+              "fieldId": "session_date",
+              "fieldValue": "={{ $json.sessionDate }}"
+            },
+            {
+              "fieldId": "volatility_atr",
+              "fieldValue": "={{ $json.volatility_atr }}"
+            },
+            {
+              "fieldId": "price_action_score",
+              "fieldValue": "={{ $json.Price_action_score }}"
+            },
+            {
+              "fieldId": "market_strength",
+              "fieldValue": "={{ $json.market_strength }}"
+            },
+            {
+              "fieldId": "poc_distance",
+              "fieldValue": "={{ $json.poc_distance }}"
+            },
+            {
+              "fieldId": "pa_type",
+              "fieldValue": "={{ $json.PA_Type }}"
+            },
+            {
+              "fieldId": "rsi",
+              "fieldValue": "={{ $json.RSI }}"
+            },
+            {
+              "fieldId": "momentum",
+              "fieldValue": "={{ $json.Momentum }}"
+            },
+            {
+              "fieldId": "volume_ratio",
+              "fieldValue": "={{ $json.VolumeRatio }}"
+            },
+            {
+              "fieldId": "adx",
+              "fieldValue": "={{ $json.ADX }}"
+            },
+            {
+              "fieldId": "plus_di",
+              "fieldValue": "={{ $json.plus_di }}"
+            },
+            {
+              "fieldId": "minus_di",
+              "fieldValue": "={{ $json.minus_di }}"
+            },
+            {
+              "fieldId": "macd",
+              "fieldValue": "={{ $json.macd }}"
+            },
+            {
+              "fieldId": "macd_flip",
+              "fieldValue": "={{ $json.MACDFlip }}"
+            },
+            {
+              "fieldId": "macd_status",
+              "fieldValue": "={{ $json.MACD_status }}"
+            },
+            {
+              "fieldId": "super_trend",
+              "fieldValue": "={{ $json.SuperTrend }}"
+            },
+            {
+              "fieldId": "supertrend_validated",
+              "fieldValue": "={{ $json.SuperTrendValidated }}"
+            },
+            {
+              "fieldId": "stochastic",
+              "fieldValue": "={{ $json.stochastic }}"
+            },
+            {
+              "fieldId": "cci",
+              "fieldValue": "={{ $json.cci }}"
+            },
+            {
+              "fieldId": "mfi",
+              "fieldValue": "={{ $json.mfi }}"
+            },
+            {
+              "fieldId": "bb_width",
+              "fieldValue": "={{ $json.bb_width }}"
+            },
+            {
+              "fieldId": "aroon_up",
+              "fieldValue": "={{ $json.aroon_up }}"
+            },
+            {
+              "fieldId": "aroon_down",
+              "fieldValue": "={{ $json.aroon_down }}"
+            },
+            {
+              "fieldId": "ema20_distance",
+              "fieldValue": "={{ $json.ema20_distance }}"
+            },
+            {
+              "fieldId": "vwap_status",
+              "fieldValue": "={{ $json.vwap_status }}"
+            },
+            {
+              "fieldId": "candle_pattern",
+              "fieldValue": "={{ $json.candlePatterns ? $json.candlePatterns.join(', ') : '' }}"
+            },
+            {
+              "fieldId": "candle_count",
+              "fieldValue": "={{ $json.candle_count }}"
+            },
+            {
+              "fieldId": "today_candle_count",
+              "fieldValue": "={{ $json.today_candle_count }}"
+            },
+            {
+              "fieldId": "orb_range",
+              "fieldValue": "={{ JSON.stringify($json.orbRange || {}) }}"
+            },
+            {
+              "fieldId": "put_call_ratio",
+              "fieldValue": "={{ $json.putCallOIRatio }}"
+            },
+            {
+              "fieldId": "put_call_premium_ratio",
+              "fieldValue": "={{ $json.putCallPremiumRatio }}"
+            },
+            {
+              "fieldId": "writers_zone",
+              "fieldValue": "={{ $json.writersZone }}"
+            },
+            {
+              "fieldId": "writers_confidence",
+              "fieldValue": "={{ $json.writersConfidence }}"
+            },
+            {
+              "fieldId": "max_pain",
+              "fieldValue": "={{ $json.maxPain }}"
+            },
+            {
+              "fieldId": "max_ce_oi_strike",
+              "fieldValue": "={{ $json.maxCEOIStrike }}"
+            },
+            {
+              "fieldId": "max_pe_oi_strike",
+              "fieldValue": "={{ $json.maxPEOIStrike }}"
+            },
+            {
+              "fieldId": "gamma_exposure",
+              "fieldValue": "={{ JSON.stringify($json.gammaExposure || {}) }}"
+            },
+            {
+              "fieldId": "Gamma_Flip Level",
+              "fieldValue": "={{ $json.gammaExposure?.gamma_flip }}"
+            },
+            {
+              "fieldId": "GEX_Regime",
+              "fieldValue": "={{ $json.gammaExposure?.regime }}"
+            },
+            {
+              "fieldId": "iv_skew",
+              "fieldValue": "={{ JSON.stringify($json.ivSkew || {}) }}"
+            },
+            {
+              "fieldId": "IV_skew_bias",
+              "fieldValue": "={{ $json.ivSkew?.bias }}"
+            },
+            {
+              "fieldId": "regime",
+              "fieldValue": "={{ $json.regime }}"
+            },
+            {
+              "fieldId": "raw_signal",
+              "fieldValue": "={{ $json.rawSignal }}"
+            },
+            {
+              "fieldId": "signal",
+              "fieldValue": "={{ $json.finalSignal }}"
+            },
+            {
+              "fieldId": "confidence",
+              "fieldValue": "={{ $json.confidence }}"
+            },
+            {
+              "fieldId": "reason",
+              "fieldValue": "={{ $json.reason }}"
+            },
+            {
+              "fieldId": "ai_insights",
+              "fieldValue": "={{ $json.ai_insights ? $json.ai_insights.join(' | ') : '' }}"
+            },
+            {
+              "fieldId": "blocked_reason",
+              "fieldValue": "={{ $json.blockedReason }}"
+            },
+            {
+              "fieldId": "streak_count",
+              "fieldValue": "={{ $json.streakCount }}"
+            },
+            {
+              "fieldId": "streak_confirmed",
+              "fieldValue": "={{ $json.streakConfirmed }}"
+            },
+            {
+              "fieldId": "LastSignal",
+              "fieldValue": "={{ $json.lastSignal }}"
+            },
+            {
+              "fieldId": "LastFireTime",
+              "fieldValue": "={{ $json.lastFireTime }}"
+            },
+            {
+              "fieldId": "debug_flags",
+              "fieldValue": "={{ $json.debugFlags ? $json.debugFlags.join(', ') : '' }}"
+            }
+          ]
+        }
+      },
+      "id": "22936299-9c07-41c4-8d6e-4dbf94559274",
+      "name": "Log Signal to Supabase",
+      "type": "n8n-nodes-base.supabase",
+      "typeVersion": 1,
+      "position": [
+        32,
+        -160
+      ],
+      "credentials": {
+        "supabaseApi": {
+          "id": "aeuolv0JKstQoY5l",
+          "name": "Supabase account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "tableId": "active_exit_orders",
+        "fieldsUi": {
+          "fieldValues": [
+            {
+              "fieldId": "entry_order_id",
+              "fieldValue": "={{$node['Calculate SL & Target'].json.entryOrderId}}"
+            },
+            {
+              "fieldId": "sl_order_id",
+              "fieldValue": "={{$node['Place Stop Loss'].json.data.orderId}}"
+            },
+            {
+              "fieldId": "target_order_id",
+              "fieldValue": "={{$node['Place Target Order'].json.data.orderId}}"
+            },
+            {
+              "fieldId": "symbol",
+              "fieldValue": "={{$node['Calculate SL & Target'].json.tradingSymbol}}"
+            },
+            {
+              "fieldId": "entry_price",
+              "fieldValue": "={{$node['Calculate SL & Target'].json.fillPrice}}"
+            },
+            {
+              "fieldId": "sl_price",
+              "fieldValue": "={{$node['Calculate SL & Target'].json.stopLoss}}"
+            },
+            {
+              "fieldId": "target_price",
+              "fieldValue": "={{$node['Calculate SL & Target'].json.target}}"
+            },
+            {
+              "fieldId": "quantity",
+              "fieldValue": "={{$node['Calculate SL & Target'].json.quantity}}"
+            },
+            {
+              "fieldId": "timestamp",
+              "fieldValue": "={{$node['Calculate SL & Target'].json.timestamp}}"
+            },
+            {
+              "fieldId": "status",
+              "fieldValue": "ACTIVE"
+            },
+            {
+              "fieldId": "risk_reward_ratio",
+              "fieldValue": "={{$node['Calculate SL & Target'].json.rewardAmount / $node['Calculate SL & Target'].json.riskAmount}}"
+            }
+          ]
+        }
+      },
+      "id": "df43fc9f-4ffd-40d3-bc6e-4d119ecfa5ed",
+      "name": "Log Exit Orders to Supabase",
+      "type": "n8n-nodes-base.supabase",
+      "typeVersion": 1,
+      "position": [
+        1760,
+        -768
+      ],
+      "credentials": {
+        "supabaseApi": {
+          "id": "aeuolv0JKstQoY5l",
+          "name": "Supabase account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "tableId": "trades",
+        "fieldsUi": {
+          "fieldValues": [
+            {
+              "fieldId": "entry_order_id",
+              "fieldValue": "={{$node['Calculate SL & Target'].json.entryOrderId}}"
+            },
+            {
+              "fieldId": "timestamp",
+              "fieldValue": "={{$node['Calculate SL & Target'].json.timestamp}}"
+            },
+            {
+              "fieldId": "symbol",
+              "fieldValue": "={{$node['Calculate SL & Target'].json.tradingSymbol}}"
+            },
+            {
+              "fieldId": "entry_price",
+              "fieldValue": "={{$node['Calculate SL & Target'].json.fillPrice}}"
+            },
+            {
+              "fieldId": "stop_loss",
+              "fieldValue": "={{$node['Calculate SL & Target'].json.stopLoss}}"
+            },
+            {
+              "fieldId": "target",
+              "fieldValue": "={{$node['Calculate SL & Target'].json.target}}"
+            },
+            {
+              "fieldId": "quantity",
+              "fieldValue": "={{$node['Calculate SL & Target'].json.quantity}}"
+            },
+            {
+              "fieldId": "status",
+              "fieldValue": "ACTIVE"
+            },
+            {
+              "fieldId": "signal",
+              "fieldValue": "={{$node['\ud83e\udde0 Call Python AI Engine'].json.finalSignal}}"
+            },
+            {
+              "fieldId": "confidence",
+              "fieldValue": "={{$node['\ud83e\udde0 Call Python AI Engine'].json.confidence}}"
+            },
+            {
+              "fieldId": "risk_reward_ratio",
+              "fieldValue": "={{$node['Calculate SL & Target'].json.rewardAmount / $node['Calculate SL & Target'].json.riskAmount}}"
+            }
+          ]
+        }
+      },
+      "id": "8f9464d4-275f-4e0d-8723-67401fc7fcf7",
+      "name": "Log Trade Summary to Supabase",
+      "type": "n8n-nodes-base.supabase",
+      "typeVersion": 1,
+      "position": [
+        1984,
+        -768
+      ],
+      "credentials": {
+        "supabaseApi": {
+          "id": "aeuolv0JKstQoY5l",
+          "name": "Supabase account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "getAll",
+        "tableId": "active_exit_orders",
+        "limit": 100,
+        "matchType": "allFilters",
+        "filters": {
+          "conditions": [
+            {
+              "keyName": "status",
+              "condition": "eq",
+              "keyValue": "ACTIVE"
+            }
+          ]
+        }
+      },
+      "id": "17f7c17c-b917-4a72-ab06-9473fdb7398a",
+      "name": "Get Active Exit Orders",
+      "type": "n8n-nodes-base.supabase",
+      "typeVersion": 1,
+      "position": [
+        976,
+        480
+      ],
+      "credentials": {
+        "supabaseApi": {
+          "id": "aeuolv0JKstQoY5l",
+          "name": "Supabase account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "update",
+        "tableId": "active_exit_orders",
+        "fieldsUi": {
+          "fieldValues": [
+            {
+              "fieldId": "status",
+              "fieldValue": "COMPLETED"
+            },
+            {
+              "fieldId": "exit_type",
+              "fieldValue": "={{$json.exitType}}"
+            },
+            {
+              "fieldId": "exit_price",
+              "fieldValue": "={{$json.exitPrice}}"
+            },
+            {
+              "fieldId": "pnl",
+              "fieldValue": "={{$json.pnl}}"
+            },
+            {
+              "fieldId": "exit_timestamp",
+              "fieldValue": "={{$json.timestamp}}"
+            }
+          ]
+        }
+      },
+      "id": "c232c523-2a95-457c-b8bd-917199c738d4",
+      "name": "Update Exit Order Status",
+      "type": "n8n-nodes-base.supabase",
+      "typeVersion": 1,
+      "position": [
+        2096,
+        480
+      ],
+      "credentials": {
+        "supabaseApi": {
+          "id": "aeuolv0JKstQoY5l",
+          "name": "Supabase account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "useCustomSchema": true,
+        "operation": "update",
+        "tableId": "active_exit_orders",
+        "fieldsUi": {
+          "fieldValues": [
+            {
+              "fieldId": "status",
+              "fieldValue": "CLOSED"
+            },
+            {
+              "fieldId": "exit_price",
+              "fieldValue": "={{$json.exitPrice}}"
+            },
+            {
+              "fieldId": "pnl",
+              "fieldValue": "={{$json.pnl}}"
+            },
+            {
+              "fieldId": "exit_type",
+              "fieldValue": "={{$json.exitType}}"
+            },
+            {
+              "fieldId": "exit_timestamp",
+              "fieldValue": "={{$json.timestamp}}"
+            }
+          ]
+        }
+      },
+      "id": "d971af07-1342-4f7f-9958-c39f6aa49a09",
+      "name": "Update Trade Status",
+      "type": "n8n-nodes-base.supabase",
+      "typeVersion": 1,
+      "position": [
+        2320,
+        480
+      ],
+      "credentials": {
+        "supabaseApi": {
+          "id": "aeuolv0JKstQoY5l",
+          "name": "Supabase account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "triggerTimes": {
+          "item": [
+            {
+              "mode": "custom",
+              "cronExpression": "*/5 9-15 * * 1-5"
+            }
+          ]
+        }
+      },
+      "id": "9b27e84c-8863-4fb5-8262-df72e55507c2",
+      "name": "Trading Hours Trigger(Antigravity)1",
+      "type": "n8n-nodes-base.cron",
+      "typeVersion": 1,
+      "position": [
+        -3104,
+        -160
+      ]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://sandbox.dhan.co/v2/orders",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "access-token",
+              "value": "eyJhbGciOiJIUzUxMiIsInR5cCI6IkpXVCJ9.eyJ0b2tlbkNvbnN1bWVyVHlwZSI6IlNFTEYiLCJwYXJ0bmVySWQiOiIiLCJkaGFuQ2xpZW50SWQiOiIyNTA4MTI3OTk1Iiwid2ViaG9va1VybCI6IiIsImlzcyI6ImRoYW4iLCJleHAiOjE3NzY2MjU1OTR9.TfScyLCIdoiDKddzIK-a443u3qEHbNMJGiWEON6pGk4chIpDUgI7go5Y9GPisnhdCG-9uUGGiphp9VOy7rDN3Q"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n    \"dhanClientId\":\"2508127995\",\n    \"correlationId\":\"{{ $('Prepare Dhan Order1').item.json.dhanOrder.correlationId }}\",\n    \"transactionType\":\"BUY\",\n    \"exchangeSegment\":\"{{ $json.dhanOrder.exchangeSegment.trim() }}\",\n    \"productType\":\"INTRADAY\",\n    \"orderType\":\"MARKET\",\n    \"validity\":\"DAY\",\n    \"securityId\":\"{{ $json.selectedOption.securityCode }}\",\n    \"quantity\":\"65\",\n    \"afterMarketOrder\":true,\n    \"amoTime\":\"OPEN\"\n}",
+        "options": {}
+      },
+      "id": "2ebeb9c4-bec5-4528-96d6-59403c6ffdb5",
+      "name": "Place Entry Order1",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4,
+      "position": [
+        864,
+        -768
+      ]
+    },
+    {
+      "parameters": {
+        "url": "=https://sandbox.dhan.co/v2/orders/{{ $json.orderId }}",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            },
+            {
+              "name": "access-token",
+              "value": "eyJhbGciOiJIUzUxMiIsInR5cCI6IkpXVCJ9.eyJ0b2tlbkNvbnN1bWVyVHlwZSI6IlNFTEYiLCJwYXJ0bmVySWQiOiIiLCJkaGFuQ2xpZW50SWQiOiIyNTA4MTI3OTk1Iiwid2ViaG9va1VybCI6IiIsImlzcyI6ImRoYW4iLCJleHAiOjE3NzY2MjU1OTR9.TfScyLCIdoiDKddzIK-a443u3qEHbNMJGiWEON6pGk4chIpDUgI7go5Y9GPisnhdCG-9uUGGiphp9VOy7rDN3Q"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "fa77a9d3-f978-4fbc-b922-ee90b134a4fe",
+      "name": "Get Order Status1",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4,
+      "position": [
+        1088,
+        -768
+      ],
+      "retryOnFail": true,
+      "maxTries": 5,
+      "waitBetweenTries": 1000
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://sandbox.dhan.co/v2/orders",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "access-token",
+              "value": "eyJhbGciOiJIUzUxMiIsInR5cCI6IkpXVCJ9.eyJ0b2tlbkNvbnN1bWVyVHlwZSI6IlNFTEYiLCJwYXJ0bmVySWQiOiIiLCJkaGFuQ2xpZW50SWQiOiIyNTA4MTI3OTk1Iiwid2ViaG9va1VybCI6IiIsImlzcyI6ImRoYW4iLCJleHAiOjE3NzY2MjU1OTR9.TfScyLCIdoiDKddzIK-a443u3qEHbNMJGiWEON6pGk4chIpDUgI7go5Y9GPisnhdCG-9uUGGiphp9VOy7rDN3Q"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"dhanClientId\": \"2508127995\",\n  \"transactionType\": \"SELL\",\n  \"exchangeSegment\": \"NSE_FNO\",\n  \"productType\": \"INTRADAY\",\n  \"orderType\": \"STOP_LOSS_MARKET\",\n  \"validity\": \"DAY\",\n  \"securityId\": \"{{ $json.securityId }}\",\n  \"quantity\": {{ $json.quantity }},\n  \"triggerPrice\": {{ $json.stopLoss }},\n  \"price\": 0,\n  \"afterMarketOrder\": false\n}",
+        "options": {}
+      },
+      "id": "ca94399f-0fad-4e05-89a3-8b69937ad9d6",
+      "name": "Place Stop Loss1",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4,
+      "position": [
+        1536,
+        -864
+      ]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://sandbox.dhan.co/v2/orders",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "access-token",
+              "value": "eyJhbGciOiJIUzUxMiIsInR5cCI6IkpXVCJ9.eyJ0b2tlbkNvbnN1bWVyVHlwZSI6IlNFTEYiLCJwYXJ0bmVySWQiOiIiLCJkaGFuQ2xpZW50SWQiOiIyNTA4MTI3OTk1Iiwid2ViaG9va1VybCI6IiIsImlzcyI6ImRoYW4iLCJleHAiOjE3NzY2MjU1OTR9.TfScyLCIdoiDKddzIK-a443u3qEHbNMJGiWEON6pGk4chIpDUgI7go5Y9GPisnhdCG-9uUGGiphp9VOy7rDN3Q"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"dhanClientId\": \"2508127995\",\n  \"transactionType\": \"SELL\",\n  \"exchangeSegment\": \"NSE_FNO\",\n  \"productType\": \"INTRADAY\",\n  \"orderType\": \"LIMIT\",\n  \"validity\": \"DAY\",\n  \"securityId\": \"{{ $json.securityId }}\",\n  \"quantity\": {{ $json.quantity }},\n  \"price\": {{ $json.target }},\n  \"afterMarketOrder\": false\n}",
+        "options": {}
+      },
+      "id": "610d20ed-45f0-4fd9-b977-5c031fd9001f",
+      "name": "Place Target Order1",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4,
+      "position": [
+        1536,
+        -672
+      ]
+    },
+    {
+      "parameters": {
+        "content": "## Access tokens for:\n**option chain nodes\n    order placments\n    order status\n    (DHAN NODES)** ",
+        "height": 480,
+        "width": 224
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        -704,
+        -336
+      ],
+      "typeVersion": 1,
+      "id": "7a4328e8-c74d-40df-ad39-d021918e86b9",
+      "name": "Sticky Note1"
+    },
+    {
+      "parameters": {
+        "url": "https://sandbox.dhan.co/v2/orders",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Accept",
+              "value": "application/json"
+            },
+            {
+              "name": "access-token",
+              "value": "eyJhbGciOiJIUzUxMiIsInR5cCI6IkpXVCJ9.eyJ0b2tlbkNvbnN1bWVyVHlwZSI6IlNFTEYiLCJwYXJ0bmVySWQiOiIiLCJkaGFuQ2xpZW50SWQiOiIyNTA4MTI3OTk1Iiwid2ViaG9va1VybCI6IiIsImlzcyI6ImRoYW4iLCJleHAiOjE3NzY2MjU1OTR9.TfScyLCIdoiDKddzIK-a443u3qEHbNMJGiWEON6pGk4chIpDUgI7go5Y9GPisnhdCG-9uUGGiphp9VOy7rDN3Q"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "23c1e00e-1696-4d6c-8dad-9e43bea0c6c8",
+      "name": "Get Dhan Order Book1",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4,
+      "position": [
+        752,
+        480
+      ]
+    },
+    {
+      "parameters": {
+        "url": "=https://sandbox.dhan.co/v2/orders/{{$json.cancelOrderId}}",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            },
+            {
+              "name": "access-token",
+              "value": "eyJhbGciOiJIUzUxMiIsInR5cCI6IkpXVCJ9.eyJ0b2tlbkNvbnN1bWVyVHlwZSI6IlNFTEYiLCJwYXJ0bmVySWQiOiIiLCJkaGFuQ2xpZW50SWQiOiIyNTA4MTI3OTk1Iiwid2ViaG9va1VybCI6IiIsImlzcyI6ImRoYW4iLCJleHAiOjE3NzY2MjU1OTR9.TfScyLCIdoiDKddzIK-a443u3qEHbNMJGiWEON6pGk4chIpDUgI7go5Y9GPisnhdCG-9uUGGiphp9VOy7rDN3Q"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "7eab77aa-4004-4f8a-96c1-32c144a79ccc",
+      "name": "Cancel Opposite Orders (Dhan)1",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4,
+      "position": [
+        1872,
+        480
+      ]
+    },
+    {
+      "parameters": {
+        "content": "## Running in SANDBOX \n",
+        "height": 656,
+        "width": 2128,
+        "color": "#5AB120"
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        416,
+        208
+      ],
+      "typeVersion": 1,
+      "id": "976b0434-e45a-498c-b52a-68ec9990d092",
+      "name": "Sticky Note3"
+    },
+    {
+      "parameters": {
+        "content": "## Running in SANDBOX \n",
+        "height": 656,
+        "width": 2128,
+        "color": "#5AB120"
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        416,
+        -1040
+      ],
+      "typeVersion": 1,
+      "id": "17988e1c-98fa-44e6-a777-ac7701627500",
+      "name": "Sticky Note4"
+    },
+    {
+      "parameters": {
+        "content": "## Python AI Model \ud83e\udd16 \ud83e\udec0\n",
+        "height": 320,
+        "width": 288,
+        "color": "#61A70C"
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        -288,
+        -256
+      ],
+      "typeVersion": 1,
+      "id": "1369aced-2bcf-4730-b463-8fd6e6578180",
+      "name": "Sticky Note2"
+    }
+  ],
+  "connections": {
+    "Trading Hour Filter1": {
+      "main": [
+        [
+          {
+            "node": "TOTP Auth1",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "TOTP Auth1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "TOTP Auth1": {
+      "main": [
+        [
+          {
+            "node": "Angel One Login(Token)1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Angel One Login(Token)1": {
+      "main": [
+        [
+          {
+            "node": "Get 5Mins Candles1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get 5Mins Candles1": {
+      "main": [
+        [
+          {
+            "node": "NIFTY Spot (LTP)1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "NIFTY Spot (LTP)1": {
+      "main": [
+        [
+          {
+            "node": "INDIA VIX Spot1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "INDIA VIX Spot1": {
+      "main": [
+        [
+          {
+            "node": "VIX Filter Condition (< 18)1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "VIX Filter Condition (< 18)1": {
+      "main": [
+        [
+          {
+            "node": "Read/Write Files from Disk",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Read/Write Files from Disk",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Parse master Copy1": {
+      "main": [
+        [
+          {
+            "node": "NIFTY Option Chain Builder1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "NIFTY Option Chain Builder1": {
+      "main": [
+        [
+          {
+            "node": "Option Chain Request1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Option Chain Request1": {
+      "main": [
+        [
+          {
+            "node": "\ud83e\udde0 Call Python AI Engine",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Signal-Filter3": {
+      "main": [
+        [
+          {
+            "node": "Place Entry Order1",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        []
+      ]
+    },
+    "\ud83e\udde0 Call Python AI Engine": {
+      "main": [
+        [
+          {
+            "node": "Log Signal to Supabase",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Read/Write Files from Disk": {
+      "main": [
+        [
+          {
+            "node": "Extract from File",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Extract from File": {
+      "main": [
+        [
+          {
+            "node": "Parse master Copy1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Monitor Every 2 Minutes": {
+      "main": [
+        [
+          {
+            "node": "Get Dhan Order Book1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Analyze Dhan Exit Executions": {
+      "main": [
+        [
+          {
+            "node": "Check if Any Exits Executed",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Check if Any Exits Executed": {
+      "main": [
+        [
+          {
+            "node": "Prepare Dhan Order Cancellations",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Prepare Dhan Order Cancellations": {
+      "main": [
+        [
+          {
+            "node": "Cancel Opposite Orders (Dhan)1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Wait-for-Order-Fill": {
+      "main": [
+        []
+      ]
+    },
+    "Calculate SL & Target": {
+      "main": [
+        [
+          {
+            "node": "Place Target Order1",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Place Stop Loss1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Prepare Dhan Order1": {
+      "main": [
+        [
+          {
+            "node": "Signal-Filter3",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Log Exit Orders to Supabase": {
+      "main": [
+        [
+          {
+            "node": "Log Trade Summary to Supabase",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Log Signal to Supabase": {
+      "main": [
+        [
+          {
+            "node": "Prepare Dhan Order1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Update Exit Order Status": {
+      "main": [
+        [
+          {
+            "node": "Update Trade Status",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get Active Exit Orders": {
+      "main": [
+        [
+          {
+            "node": "Analyze Dhan Exit Executions",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Trading Hours Trigger(Antigravity)1": {
+      "main": [
+        [
+          {
+            "node": "Trading Hour Filter1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Place Entry Order1": {
+      "main": [
+        [
+          {
+            "node": "Get Order Status1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get Order Status1": {
+      "main": [
+        [
+          {
+            "node": "Calculate SL & Target",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Place Target Order1": {
+      "main": [
+        [
+          {
+            "node": "Log Exit Orders to Supabase",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Place Stop Loss1": {
+      "main": [
+        [
+          {
+            "node": "Log Exit Orders to Supabase",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get Dhan Order Book1": {
+      "main": [
+        [
+          {
+            "node": "Get Active Exit Orders",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Cancel Opposite Orders (Dhan)1": {
+      "main": [
+        [
+          {
+            "node": "Update Exit Order Status",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  }
+}

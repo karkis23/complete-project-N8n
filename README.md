@@ -31,13 +31,16 @@ A high-fidelity simulation environment that uses a **Hybrid Execution Model**:
 - **Charts**: Recharts (High-performance SVG)
 - **Icons**: Lucide React
 
-## 📊 Database Schema (`public.signals`)
-The signals table is organized into high-density telemetry groups:
-- **Metadata**: Core timestamps and engine versioning.
-- **Market Context**: Spot prices, VIX, and session progress.
-- **Technical Matrix**: RSI, MACD, ADX, Momentum, ATR.
-- **Derivatives & GEX**: PCR, Gamma Exposure, IV Skew, GEX Regimes.
-- **Signal Logic**: Final trade signals, confidence, and AI insights.
+## 📊 Database Schema (`public.signals`) — v5.0
+The signals table is fundamentally designed as an **ML Feature Store**. It captures exactly 64 data points every 5 minutes:
+- **Metadata**: Core timestamps, session dates, execution processing time.
+- **Market Context**: Spot prices, VIX multipliers, and session progress.
+- **Technical Matrix (18 features)**: RSI, MACD, ADX, Momentum, Stochastic, CCI, MFI, Bollinger Bands.
+- **Derivatives & GEX (9 features)**: PCR, Gamma Exposure, IV Skew, Max Pain, GEX Regimes.
+- **Signal Logic**: Confidence, AI insights, reasons, and state/streak metrics.
+
+### Automated ML Pipeline (`ml_training_export`)
+The database contains a built-in SQL View that automatically structures the 64 columns into the exact **57 numeric features** required by the Python XGBoost engine (`train_model.py`), fully bypassing manual CSV data wrangling.
 
 ## 🚀 Key Features
 - **Global Search & Date Filters**: Deep drill-down into signals and audit logs across all pages.

@@ -435,23 +435,49 @@ export default function ValidationPage() {
                                     {expandedRow === i && (
                                         <tr>
                                             <td colSpan={8} style={{ padding: 0, background: 'var(--bg-subtle)', borderBottom: '1px solid var(--border)' }}>
-                                                <div className="slide-up" style={{ padding: '20px 40px', display: 'grid', gridTemplateColumns: 'repeat(6,1fr)', gap: '10px' }}>
-                                                    {[
-                                                        { label: 'RSI', value: (a as any).rsi?.toFixed(1) },
-                                                        { label: 'ADX', value: a.adx?.toFixed(1) },
-                                                        { label: 'Confidence', value: `${a.confidence}%` },
-                                                        { label: 'PCR', value: a.putCallRatio?.toFixed(2) },
-                                                        { label: 'Mode', value: a.engineMode },
-                                                        { label: 'Price Move', value: `${a.diff > 0 ? '+' : ''}${a.diff.toFixed(1)} (${a.pct.toFixed(2)}%)` }
-                                                    ].map(item => (
-                                                        <div key={item.label} style={{
-                                                            padding: '10px 12px', background: 'var(--bg-elevated)',
-                                                            borderRadius: 8, border: '1px solid var(--border)'
-                                                        }}>
-                                                            <div style={{ fontSize: '9.5px', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.08em', color: 'var(--text-3)', marginBottom: '4px' }}>{item.label}</div>
-                                                            <div style={{ fontSize: '13px', fontWeight: 700, color: 'var(--text-1)' }}>{item.value ?? '—'}</div>
+                                                <div className="slide-up" style={{ padding: '24px 40px', display: 'flex', flexDirection: 'column', gap: '20px' }}>
+                                                    
+                                                    {/* Primary Status */}
+                                                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(5,1fr)', gap: '10px' }}>
+                                                        {[
+                                                            { label: 'RSI / ADX', value: `${a.rsi?.toFixed(1) ?? '—'} / ${a.adx?.toFixed(1) ?? '—'}` },
+                                                            { label: 'Confidence', value: `${a.confidence}%` },
+                                                            { label: 'PCR (O/I)', value: a.putCallRatio?.toFixed(2) },
+                                                            { label: 'Mode', value: a.engineMode },
+                                                            { label: 'Audit Price Move', value: `${a.diff > 0 ? '+' : ''}${a.diff.toFixed(1)} (${a.pct.toFixed(2)}%)`, color: a.diff > 0 ? 'var(--profit)' : a.diff < 0 ? 'var(--loss)' : 'var(--text-1)' }
+                                                        ].map(item => (
+                                                            <div key={item.label} style={{
+                                                                padding: '12px 14px', background: 'var(--bg-elevated)',
+                                                                borderRadius: 8, border: '1px solid var(--border)'
+                                                            }}>
+                                                                <div style={{ fontSize: '9.5px', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.08em', color: 'var(--text-3)', marginBottom: '4px' }}>{item.label}</div>
+                                                                <div className="font-mono" style={{ fontSize: '14px', fontWeight: 700, color: item.color || 'var(--text-1)' }}>{item.value ?? '—'}</div>
+                                                            </div>
+                                                        ))}
+                                                    </div>
+
+                                                    {/* Deep Data Telemetry */}
+                                                    <div>
+                                                        <div style={{ fontSize: '10px', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.1em', color: 'var(--accent-light)', marginBottom: '12px' }}>v4.3 Telemetry Payload</div>
+                                                        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(5,1fr)', gap: '10px' }}>
+                                                            {[
+                                                                { label: 'GEX Exposure', value: a.gammaExposure?.toLocaleString() },
+                                                                { label: 'IV Skew', value: a.ivSkew?.toFixed(3) },
+                                                                { label: 'POC Distance', value: a.pocDistance?.toFixed(2) },
+                                                                { label: 'Session Progress', value: `${((a.sessionProgress || 0) * 100).toFixed(0)}%` },
+                                                                { label: 'Volatility ATR', value: a.volatilityATR?.toFixed(2) }
+                                                            ].map(item => (
+                                                                <div key={item.label} style={{
+                                                                    padding: '12px 14px', background: 'rgba(99, 102, 241, 0.03)',
+                                                                    borderRadius: 8, border: '1px solid rgba(99, 102, 241, 0.1)'
+                                                                }}>
+                                                                    <div style={{ fontSize: '9.5px', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.08em', color: 'var(--accent-light)', marginBottom: '4px' }}>{item.label}</div>
+                                                                    <div className="font-mono" style={{ fontSize: '14px', fontWeight: 700, color: 'var(--text-1)' }}>{item.value ?? '—'}</div>
+                                                                </div>
+                                                            ))}
                                                         </div>
-                                                    ))}
+                                                    </div>
+
                                                 </div>
                                             </td>
                                         </tr>

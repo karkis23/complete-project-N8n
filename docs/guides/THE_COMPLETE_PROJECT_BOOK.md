@@ -146,23 +146,26 @@ This enforces a strict mathematical Risk/Reward ratio of **1:2.08**. Max loss pe
 
 ---
 
-## Chapter 5: Data Persistence & Ledger (Google Sheets)
+## Chapter 5: Data Persistence & ML Pipeline (Supabase)
 
-Zenith subverts traditional database architectures (Postgres/MySQL) in favor of Google Sheets. Why? 
-**Immediate auditing from any mobile device, and zero-configuration frontend data fetching.**
+Zenith v4.2+ completed a massive architectural migration away from Google Sheets, adopting **Supabase (PostgreSQL)** as its core persistence and telemetry layer. This shift was mandatory to support high-frequency reads, Row Level Security (RLS), and automated Machine Learning data aggregation.
 
-### 5.1 The Ledger Schema
-The spreadsheet is broken into three critical tables:
+### 5.1 The Database Schema (v5.0)
+The database is broken into three highly structured tables:
 
-1. **Dhan_Signals (gid=0):** 
-   Logs the exact state of the market every 5 minutes. Did the bot buy? Wait? Avoid? What was the RSI? What did the AI think? This is the ultimate white-box log.
-2. **Dhan_Active_Trades:** 
-   Only active trades populate here. Includes exact Order IDs from Dhan so the bot can cancel them if needed.
-3. **Dhan_Trade_Summary:** 
-   The graveyard of completed trades. Essential for calculating total PnL, Win Rates, and finding out exactly why a trade failed (Target Hit vs SL Hit).
+1. **`signals` (The ML Feature Store):** 
+   This is the heart of the analytical engine. It captures **64 distinct data points** every 5 minutes. Did the bot buy? What was the exact Aroon Up? What was the PCR? What was the `price_action_score`? This table is the ultimate white-box log.
+2. **`active_exit_orders`:** 
+   Only active trades populate here. Includes exact Order IDs for entry, SL, and Target limits. The execution loop monitors this table every minute to audit broker status.
+3. **`trades`:** 
+   The ledger of completed trades. Essential for calculating total PnL, Win Rates, Max Adverse Excursions (MAE), and calculating Risk/Reward logic.
 
-### 5.2 Proxied Fetching
-The React frontend does not use complex OAuth permissions. Because the Google Sheet is public (read-only), React downloads the raw CSV export directly from Google's servers. This provides a lightning-fast, CORS-friendly, zero-latency data pipeline.
+### 5.2 The Automated ML Pipeline
+Training an XGBoost model historically required hours of manual CSV wrangling, aligning technical indicators, and dropping NA rows. 
+Zenith solves this via the Postgres database layer. A native SQL view named **`ml_training_export`** runs continuously, performing on-the-fly normalization. It takes the 64 raw telemetry columns from the `signals` table and automatically outputs the exact **57 numeric features** expected by `preprocessor.py`, fully ready to download.
+
+### 5.3 Security & Fetching
+The React frontend uses the Supabase Javascript SDK (`@supabase/supabase-js`) to establish a real-time WebSocket connection to the database. All tables are locked behind Row Level Security (RLS). Only authenticated clients (or the service role key from the Python backend) can insert or read the execution data, creating a zero-trust environment.
 
 ---
 
@@ -246,3 +249,7 @@ Are you setting up Zenith on a new VPS or desktop? Follow these precise steps.
 
 ---
 *End of Document. Maintain security access and verify API connections daily.*
+
+## Appendix A: Technical Session Logs
+Throughout the active development and maintenance of Zenith v4.2.0, detailed session summaries are captured for audit and future-proofing:
+- [March 24, 2026: n8n Supabase Node Mapping & Telemetry Expansion](SESSION_SUMMARY_2026-03-24_N8N_SUPABASE_MAPPING.md)

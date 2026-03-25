@@ -120,6 +120,26 @@ export async function fetchSignals(limit = 100): Promise<LiveSignal[]> {
         return [];
     }
 
+    const parseJSONNum = (val: any, fieldKey: string): number => {
+        if (val === null || val === undefined) return 0;
+        if (typeof val === 'number') return val;
+        if (typeof val === 'string') {
+            if (val.trim().startsWith('{')) {
+                try {
+                    const parsed = JSON.parse(val);
+                    return Number(parsed[fieldKey] ?? 0);
+                } catch {
+                    return Number(val) || 0;
+                }
+            }
+            return Number(val) || 0;
+        }
+        if (typeof val === 'object') {
+            return Number(val[fieldKey] ?? 0);
+        }
+        return 0;
+    };
+
     return (data || []).map(r => ({
         id: r.id,
         timestamp: r.timestamp,
@@ -148,8 +168,8 @@ export async function fetchSignals(limit = 100): Promise<LiveSignal[]> {
         engineVersion: r.engine_version,
         engineMode: r.engine_mode,
         aiInsights: r.ai_insights,
-        gammaExposure: Number(r.gamma_exposure),
-        ivSkew: Number(r.iv_skew),
+        gammaExposure: parseJSONNum(r.gamma_exposure, 'total_gex'),
+        ivSkew: parseJSONNum(r.iv_skew, 'skew'),
         superTrend: r.super_trend,
         priceActionScore: Number(r.price_action_score),
         pocDistance: Number(r.poc_distance),
