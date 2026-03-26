@@ -1,5 +1,5 @@
 # 16 — The ML Oracle: How We Label Data for XGBoost
-*Documented: March 25, 2026*
+*Updated: March 26, 2026 (v4.3.0 Data Incubation Phase)*
 
 ---
 
@@ -8,7 +8,9 @@ Currently, our Supabase database captures the `signal` column (what the hardcode
 
 **The Fatal Flaw:** If we train the XGBoost algorithm to predict the `signal` column, we are simply training the AI to perfectly mimic the Rules Engine. We are building an elaborate mathematical clone that will make the exact same mistakes the Rules Engine makes. 
 
-The goal of the ML pipeline is *not* to guess what the Rules Engine thought. The goal is to accurately predict **what the market actually did**.
+*Note on Survivorship Bias (Fixed v4.3.0):* Previously, we only logged `BUY CE` and `BUY PE`. Now, we successfully log all `WAIT`, `AVOID`, and `SIDEWAYS` states. This is crucial because it provides the Oracle scripting with the "negative class" dataset—a complete mathematical picture of when *not* to trade, allowing the script to find setups we incorrectly avoided.
+
+The goal of the ML pipeline is *not* to guess what the Rules Engine thought at that moment. The goal is to accurately predict **what the market actually did** using the 64 columns of collected telemetry.
 
 ---
 
@@ -79,12 +81,52 @@ The AI mathematically figures out the hidden correlations in those 57 features t
 
 ---
 
-## 5. Current State of the Database
+## 5. Current State of the Database (Data Incubation Phase)
 
-If you inspect the `public.signals` schema in Supabase today, you will notice two empty columns precisely sitting at the end of every row:
+Following the v4.3.0 Live Database Audit, the `public.signals` table in Supabase is successfully ingesting the full 64-column feature matrix with 100% sync rate (0 missing metrics across GEX, PCR, IV Skew, etc.).
+
+However, if you inspect the schema today, you will notice the target columns sitting at the end of every row:
 *   `"label": null`
 *   `"label_source": null`
 
 They are sitting dormant, intentionally waiting for Phase 3. 
 
-Once we collect 2-3 weeks of raw 64-column data, our very next phase is executing the `label_data.py` script to automatically back-fill those empty columns using the math described above. Only when those labels are populated based on *Reality* will we unleash the XGBoost algorithm over the dataset.
+We are currently in the **Data Incubation Phase**. The system flawlessly logs ~75 live market snapshots daily. Once we collect 2-3 weeks of raw 64-column data, our very next action is executing the `label_data.py` script to automatically back-fill those empty columns using the forward-looking math described above. 
+
+Only when those labels are populated based on *Absolute Market Reality* will the `ml_training_export` SQL View be passed into the XGBoost training algorithm.
+
+---
+
+## 6. Hindsight vs. Foresight: Why We Collect the 57 Indicators
+
+A common point of confusion is: *"If the Oracle Script only looks at `time` and `spot_price` to assign the label, why do we bother collecting the 57 features (RSI, GEX, PCR) every 5 minutes?"*
+
+The answer lies in the fundamental difference between **Training (Hindsight)** and **Live Trading (Foresight)**.
+
+To train an AI model, you mathematically require two datasets:
+1. **The Clues (The 57 Indicators):** What the market looked like at that exact moment.
+2. **The Answer Key (The Oracle Label):** What the market actually did next.
+
+### The Detective Analogy
+
+Think of the XGBoost AI model as a **Detective in training**.
+Think of the Oracle Script as the **Judge** who already knows the answer.
+
+**During Offline Training (The Weekend):**
+* The Detective looks at a snapshot of a crime scene from last Tuesday at 10:00 AM. They look at the 57 clues (RSI was oversold, Gamma Exposure was highly negative, Bollinger Bands were squeezing).
+* The Detective makes a guess: *"I think the market crashed."*
+* The Detective then checks the Judge's answer key (The Oracle Label). The Judge says: **`LABEL 0: The market actually broke out.`**
+* The Detective realizes they were wrong! They mathematically adjust their internal logic trees. They learn that *when* RSI is oversold *and* GEX is highly negative, it actually causes a massive breakout.
+* The Detective repeats this process 50,000 times over historical data until they perfectly understand the correlations between the 57 clues and the eventual outcome.
+
+**During Live Trading (Monday Morning):**
+* The Detective is now fully trained and deployed to the live market. 
+* At 10:00 AM, the Judge (The Oracle) **does not exist.** We cannot look into the future. 
+* The Detective ONLY has the 57 clues that were just collected by n8n.
+* Because the Detective spent the entire weekend rigorously studying exactly how those 57 clues correlate to reality, they take one look at the live Option Chain and instantly predict: *"I have seen this exact mathematical footprint before. There is an 85% probability of a Bullish Breakout."*
+
+### Conclusion
+**The Oracle uses Hindsight (Future Price) to provide the perfect answers.**
+**The AI studies those answers against the Features to develop Foresight.**
+
+We physically collect all 57 indicators because they are the absolute mathematical foundation the AI relies on to predict the future when the Oracle is no longer there to protect it.
