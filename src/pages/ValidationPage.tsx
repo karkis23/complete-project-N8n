@@ -464,7 +464,7 @@ export default function ValidationPage() {
                                                                 { label: 'GEX Exposure', value: a.gammaExposure?.toLocaleString() },
                                                                 { label: 'IV Skew', value: a.ivSkew?.toFixed(3) },
                                                                 { label: 'POC Distance', value: a.pocDistance?.toFixed(2) },
-                                                                { label: 'Session Progress', value: `${((a.sessionProgress || 0) * 100).toFixed(0)}%` },
+                                                                { label: 'Session Progress', value: `${(a.sessionProgress || 0).toFixed(0)}%` },
                                                                 { label: 'Volatility ATR', value: a.volatilityATR?.toFixed(2) }
                                                             ].map(item => (
                                                                 <div key={item.label} style={{

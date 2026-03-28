@@ -292,7 +292,7 @@ export default function DashboardPage() {
                     <MiniStat label="RSI (14)" value={latest?.rsi?.toFixed(1)} />
                     <MiniStat label="VOL (ATR)" value={latest?.volatilityATR?.toFixed(2)} />
                     <MiniStat label="Momentum" value={latest?.momentum?.toFixed(2)} />
-                    <MiniStat label="Progress" value={`${((latest?.sessionProgress || 0) * 100).toFixed(0)}%`} accent="var(--warn)" />
+                    <MiniStat label="Progress" value={`${(latest?.sessionProgress || 0).toFixed(0)}%`} accent="var(--warn)" />
                 </div>
             </div>
 

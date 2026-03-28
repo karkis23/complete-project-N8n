@@ -257,7 +257,7 @@ export default function SignalsPage() {
                                                                 { label: 'PA Score', value: `${s.priceActionScore}/100`, sub: 'Price Action Integrity' },
                                                                 { label: 'POC Distance', value: s.pocDistance?.toFixed(2), sub: 'Points from Value Area' },
                                                                 { label: 'Volatility ATR', value: s.volatilityATR?.toFixed(2), sub: 'True range (14)' },
-                                                                { label: 'Session Progress', value: `${(s.sessionProgress * 100).toFixed(0)}%`, sub: 'Market day completion' },
+                                                                { label: 'Session Progress', value: `${(s.sessionProgress || 0).toFixed(0)}%`, sub: 'Market day completion' },
                                                                 { label: 'GEX Exposure', value: s.gammaExposure?.toLocaleString(), sub: 'Gamma Exposure Units' },
                                                                 { label: 'IV Skew', value: s.ivSkew?.toFixed(3), sub: 'Options Sentiment' },
                                                             ].map(item => (
