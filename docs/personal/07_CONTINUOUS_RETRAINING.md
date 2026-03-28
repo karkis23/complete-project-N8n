@@ -1,82 +1,62 @@
 # 07 — Continuous Retraining: Keeping the AI Sharp Over Time
-*Discussed: March 2026*
+*Updated: March 2026 (v4.3.0 Supabase & GPU Architecture)*
 
 ---
 
-## The Market Never Stays the Same
+## 1. The Market Never Stays the Same
+What works in March (trending, high ADX) might fail in June (slow summer chop). AI models "drift" over time if they are never updated. A model trained purely on March data might underperform by August because the overall market regime has changed.
 
-What works in March (trending, high ADX) might fail in June (slow summer chop). AI models "drift" over time if they are never updated. A model trained purely on 2026 March data might underperform by August 2026 because the market structure has changed.
-
-The solution is **Continuous Retraining** — a regular refresh cycle that keeps the AI adapted to the current market.
-
----
-
-## The Training Lifecycle
-
-### Version 1.0 (First Training — April/May 2026)
-- 1,500–2,000 rows collected
-- First training on the entire dataset
-- AI goes live for the first time
-
-### Version 1.1 (2–3 weeks after going live)
-- Google Sheet now has 2,500 rows (it kept logging while AI was trading)
-- Retrain with the expanded dataset
-- More diverse data → better patterns found → accuracy improves
-
-### Version 1.2, 1.3, ... (Monthly or when accuracy dips)
-- Each retrain includes all historical data plus new recent data
-- The model gets a cumulative education — it never "forgets" old lessons
+The solution is **Continuous Retraining** — a regular weekend refresh cycle that keeps the AI adapted to current conditions.
 
 ---
 
-## The Weekend Retrain Ritual (Recommended)
+## 2. The Danger of Incremental Learning ("Catastrophic Forgetting")
 
-Every Saturday morning, follow these simple steps:
+A common question is: *"Can we just train the AI on this exact week's data to update it? Do we really need to retrain the entire database from scratch?"*
 
-**Step 1:** Open your Google Sheet → File → Download → CSV
-**Step 2:** Save as `training_YYYYMMDD.csv` (date in filename for tracking)
-**Step 3:** Open PowerShell, navigate to `api/`, activate the virtual environment
-**Step 4:** Run the Look-Ahead Labeler on new rows
-**Step 5:** Run `python scripts/train_model.py --data training_YYYYMMDD.csv`
-**Step 6:** Training completes in ~60 seconds on your laptop
-**Step 7:** New `signal_xgb_v1.pkl` is automatically generated and replaces the old one
-**Step 8:** Restart the server on Monday morning
+**Yes. You must train the entire database from scratch every single time.**
 
-No changes to n8n. No changes to the React dashboard. The upgraded brain is silently installed.
+If you only train the AI on the new data from *this* week, the AI will heavily bias itself toward whatever just happened. In Machine Learning, this is called **"Catastrophic Forgetting."** 
+For example, if this week was a boring, sideways market, the AI might aggressively overwrite its own internal rules to survive sideways chop. When Monday opens with a massive 500-point VIX crash identical to one that happened 3 months ago, the AI will fail—because it "forgot" the math from 3 months ago.
+
+By feeding it the **entire** historical database every weekend, the XGBoost trees mathematically balance *everything*—the weird crash from 6 months ago, the sideways chop from 2 months ago, and the momentum breakout from last Thursday.
 
 ---
 
-## How XGBoost Handles New Data
+## 3. The GPU Advantage (Speed is Free)
 
-XGBoost does a full retrain each time (not incremental). This is actually an advantage — it re-analyzes ALL the data from scratch with fresh eyes. It doesn't build on old biases; it discovers the best patterns from the entire historical dataset every retrain.
+Because you have highly compressed numeric data (57 integer features) and **NVIDIA GPU Acceleration (`device="cuda"`) enabled**, training your entire database from scratch is practically free. 
 
-A retrain on 5,000 rows of data (about 4 months of market data) typically takes:
-- ~45 seconds on a standard i5 laptop
-- ~15 seconds on an i7 or Ryzen 7
-- ~5 seconds if you add a GPU (future upgrade option)
+Even if you aggregate an enormous 500,000 rows of live Supabase data over the next two years, your GPU will blast through the *entire* mathematical matrix and build all 50,000 XGBoost trees in under 60 seconds! There is zero computational penalty for training the whole database.
 
 ---
 
-## Versioning Your Models (Best Practice)
+## 4. The 5-Step Weekend Ritual
 
-Instead of overwriting the same `signal_xgb_v1.pkl` file every time, consider maintaining a version history:
+Here is the exact CI/CD (Continuous Integration) workflow for upgrading your AI's brain over the weekend:
 
-```
-api/models/
-  signal_xgb_v1.pkl     ← Active model (always this name)
-  archive/
-    signal_xgb_2026_03.pkl
-    signal_xgb_2026_04.pkl
-    signal_xgb_2026_05.pkl
-```
+### Step 1: The Oracle Run (Friday Evening)
+* When the market closes, run the `label_data.py` Python script. 
+* The script connects to Supabase, finds all the unlabelled data from Monday to Friday, and mathematically calculates if those rows should be branded `0 (CE)`, `1 (PE)`, or `2 (WAIT)` based on your -15/+35 targets.
 
-If a new version performs badly in live trading, you can immediately roll back by copying an archived version back to `signal_xgb_v1.pkl` and restarting the server.
+### Step 2: The Extraction (Saturday Morning)
+* Log into your Supabase dashboard and go to your `ml_training_export` SQL View.
+* Click **Export to CSV**. 
+* Save it locally as `training_YYYYMMDD.csv` so you keep an archive.
 
----
+### Step 3: The GPU Training Run (Saturday Afternoon)
+* Open your terminal in the Zenith project folder.
+* Run: `python api/scripts/train_model.py --data training_YYYYMMDD.csv`
+* Your NVIDIA CUDA cores spin up. The XGBoost algorithm loads the CSV and performs the Extreme Gradient Boosting loop.
+* *Result:* It generates a brand new `signal_xgb_v1.pkl` (The Brain) and a `training_report.json` (The Report Card).
 
-## Signs That It Is Time to Retrain
+### Step 4: The Validation Gate (The Human Check)
+Before deploying the new brain on live money, read the `training_report.json` Confusion Matrix. 
+* Did the AI achieve an acceptable win rate on directional breakouts? 
+* If *yes*, the new model is a mathematical success.
+* If *no* (maybe the week was extremely weird and noisy), **abort the upgrade**. You keep using last week's model until next Friday. *Never deploy a downgraded model.*
 
-1. Win rate drops below 55% over 2+ consecutive weeks
-2. The AI starts making the same type of mistake repeatedly (e.g., always getting faked by morning gap-opens)
-3. New market conditions emerge that weren't in the original training data (e.g., extreme Budget day volatility)
-4. You have collected 500+ new rows since the last training
+### Step 5: The Hot Swap Deployment (Sunday)
+* If the new model passes, drag the new `signal_xgb_v1.pkl` file into your `api/engine/models/` directory, overwriting the old one.
+* Reboot your FastAPI server (`uvicorn main:app`).
+* When n8n fires at 9:20 AM on Monday, it will be talking to an updated AI that mathematically remembers every single mistake it made last week!
