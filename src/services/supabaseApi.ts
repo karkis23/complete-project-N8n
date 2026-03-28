@@ -175,11 +175,11 @@ export async function fetchSignals(limit = 100): Promise<LiveSignal[]> {
         pocDistance: Number(r.poc_distance),
         volatilityATR: Number(r.volatility_atr),
         sessionProgress: Number(r.session_progress),
-        lastFireTime: r.LastFireTime,
-        lastSignal: r.LastSignal,
-        ivSkewBias: r.IV_skew_bias,
-        gexRegime: r.GEX_Regime,
-        gammaFlipLevel: Number(r["Gamma_Flip Level"]),
+        lastFireTime: r.last_fire_time,
+        lastSignal: r.last_signal,
+        ivSkewBias: r.iv_skew_bias,
+        gexRegime: r.gex_regime,
+        gammaFlipLevel: Number(r.gamma_flip_level),
     }));
 }
 

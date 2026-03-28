@@ -1,9 +1,10 @@
 # 📊 ZENITH: Complete System Technical Documentation
 
-> **Version:** 4.3.0 (Institutional Deployment)
-> **Last Updated:** 26 March 2026
+> **Version:** 4.3.1 (Security Hardening & Structural Cleanup)
+> **Last Updated:** 28 March 2026
 > **Aesthetic:** ZENITH Professional Midnight
 > **Core Guide:** [ZENITH_SYSTEM_HANDBOOK.md](./ZENITH_SYSTEM_HANDBOOK.md)
+> **Architecture Diagrams:** [diagram.md](./diagram.md)
 
 ---
 
@@ -11,10 +12,23 @@
 
 1. [System Overview](#1-system-overview)
 2. [Architecture (Zenith Standard)](#2-architecture-zenith-standard)
-3. [Operational Workflow](#3-operational-workflow)
-4. [Intelligence Hub (Python API)](#4-intelligence-hub-python-api)
-5. [Terminal Interface (React)](#5-terminal-interface-react)
-6. [Data Schema & Persistence](#6-data-schema--persistence)
+3. [Directory Structure](#3-directory-structure-v43)
+4. [Data Flow — End to End](#4-data-flow--end-to-end-v40-ai)
+5. [n8n Workflow](#5-n8n-workflow)
+6. [Signal Engine v3.0](#6-signal-engine-v30)
+7. [Technical Indicators v2.0](#7-calculate-technical-indicators-v20)
+8. [Writers Zone v2.0](#8-writers-zone-analysis-v20)
+9. [Order Execution Engine](#9-order-execution-engine)
+10. [Database Schema (Supabase)](#10-database-schema-supabase-postgresql)
+11. [React Frontend](#11-react-frontend)
+12. [Strategy Tester](#12-strategy-tester-backtest-system)
+13. [APIs & External Services](#13-apis--external-services)
+14. [Known Bugs & Fixes](#14-known-bugs--fixes-applied)
+15. [Configuration Reference](#15-configuration-reference)
+16. [Deployment Guide](#16-deployment-guide)
+17. [Troubleshooting](#17-troubleshooting)
+18. [Supabase Migration](#18-completed-supabase-migration)
+19. [Version Changelog](#19-version-changelog)
 
 ---
 
@@ -89,28 +103,58 @@ graph TD
 
 ---
 
-## 3. Directory Structure (v4.0 AI)
+## 3. Directory Structure (v4.3)
 
 ```
 project/
 │
-├── api/                          # 🧠 THE BRAIN: Python AI Engine
-│   ├── engine/                   # Core Logic (Indicators, Greeks, AI)
-│   ├── main.py                   # FastAPI Gateway
-│   └── start_server.bat          # VirtualEnv & Server Launcher
+├── api/                              # 🧠 THE BRAIN: Python AI Engine
+│   ├── engine/                       # Core Logic Modules
+│   │   ├── indicators.py             #   NumPy/Pandas indicator calculator
+│   │   ├── writers_zone.py           #   GEX, IV Skew, PCR analysis
+│   │   ├── signal_engine.py          #   XGBoost AI model loader
+│   │   ├── rule_engine.py            #   v3.0 rules fallback (25-step)
+│   │   ├── preprocessor.py           #   57-feature vector builder
+│   │   └── models.py                 #   Pydantic request/response schemas
+│   ├── models/                       #   Trained .pkl model storage
+│   ├── scripts/                      #   train_model.py, test_api.py
+│   ├── main.py                       #   FastAPI Gateway (/api/predict)
+│   ├── requirements.txt              #   Python dependencies
+│   └── start_server.bat              #   VirtualEnv & uvicorn launcher
 │
-├── src/                          # 🖥️ THE VIEW: React Frontend Source
-│   ├── services/                 # Sheets API & Data Fetchers
-│   └── index.css                 # 🎨 Professional Dark Design System
+├── src/                              # 🖥️ THE VIEW: React Frontend
+│   ├── components/                   #   Header, Sidebar, ZenithLogo
+│   ├── hooks/                        #   useTrading.ts, useSettings.ts
+│   ├── pages/                        #   11 pages (see §11)
+│   ├── services/                     #   supabaseApi.ts, supabaseClient.ts, sheetsApi.ts (legacy)
+│   ├── types.ts                      #   Core TypeScript interfaces
+│   └── index.css                     #   🎨 Professional Dark Design System
 │
-├── n8n/                          # 🎡 THE MESSENGER: n8n Automation
-│   └── workflows/                # v4.0 AI Workflow exports
+├── n8n/                              # 🎡 THE MESSENGER: n8n Automation
+│   ├── workflows/                    #   JSON workflow exports (5 files)
+│   ├── scripts/                      #   JS node code (signal v2.x/v3.0, indicators, writers zone)
+│   ├── fixed_nodes/                  #   Bug fix JS patches
+│   ├── tools/                        #   (Empty — reserved)
+│   └── supabase_schema.sql           #   Complete PostgreSQL schema + views + RLS
 │
-├── docs/                         # 📚 THE KNOWLEDGE: Guides & PRDs
-│   ├── guides/                   # Operational and Setup guides
-│   └── NIFTY_ALPHA_PROJECT_BOOK.md # Unified project handbook
+├── docs/                             # 📚 THE KNOWLEDGE: Documentation
+│   ├── guides/                       #   21 operational & setup guides
+│   ├── reports/                      #   13 session/audit reports
+│   ├── sessions/                     #   4 session summaries
+│   ├── internal/                     #   7 internal architecture docs
+│   ├── personal/                     #   22 learning & analysis notes
+│   ├── legacy/                       #   Archived docs
+│   ├── PROJECT_DOCUMENT.md           #   ← THIS FILE (master reference)
+│   ├── ZENITH_SYSTEM_HANDBOOK.md     #   Operational standards
+│   ├── ZENITH_TERMINAL_SPECIFICATION.md  # Terminal design spec
+│   └── diagram.md                    #   7 Mermaid architecture diagrams
 │
-└── archive/                      # Legacy code and v3.0 engines
+├── data/                             # 📦 Data files (CSV exports, scrip master)
+├── scripts/                          # 🔧 Utility scripts (Python helpers, .bat launchers)
+├── start/                            # 🚀 Startup scripts (start_n8n, start_server, start_webapp)
+├── public/                           # Static assets
+├── dist/                             # Production build output
+└── .agent/                           # AI agent configuration & workflows
 ```
 
 ---
@@ -180,9 +224,11 @@ All order IDs + prices → Log Active Trade → Dhan_Active_Trades sheet
 
 | File | Description |
 |---|---|
+| `n8n/workflows/NEWN8NFINAL_SUPABASE.JSON` | **PRIMARY** — Main workflow with Supabase persistence |
+| `n8n/workflows/exit_order_monitor_supabase.json` | **PRIMARY** — Exit monitor with Supabase |
+| `n8n/workflows/updated_workflow.json` | Latest consolidated workflow export (63KB) |
 | `n8n/workflows/NEWN8NFINAL.JSON` | Legacy workflow with Google Sheets logging (backup) |
-| `n8n/workflows/NEWN8NFINAL_SUPABASE.JSON` | **Use this** — latest workflow with Supabase persistence |
-| `n8n/workflows/exit_order_monitor_supabase.json` | **Use this** — exit monitor with Supabase |
+| `n8n/workflows/exit_order_monitor.json` | Legacy exit monitor (Google Sheets) |
 | `docs/guides/SUPABASE_MIGRATION_GUIDE.md` | Complete migration documentation |
 
 ### Workflow Node Map
@@ -372,7 +418,7 @@ All order IDs + prices → Log Active Trade → Dhan_Active_Trades sheet
 
 ---
 
-## 7. Calculate Technical Indicators v2.0
+## 7. Technical Indicators Calculator v2.0
 
 **Active File:** `n8n/scripts/calculate_technical_indicators_v2.js` — paste into n8n's `Calculate All Technical Indicators1` node
 
@@ -437,7 +483,7 @@ All order IDs + prices → Log Active Trade → Dhan_Active_Trades sheet
 
 ---
 
-## 7. Order Execution Engine
+## 9. Order Execution Engine
 
 ### Entry Order
 - **Order Type:** MARKET (or LIMIT at ATM)
@@ -462,9 +508,10 @@ All order IDs + prices → Log Active Trade → Dhan_Active_Trades sheet
 
 ---
 
-## 8. Database Schema (Supabase PostgreSQL)
+## 10. Database Schema (Supabase PostgreSQL)
 
 > **Migrated from Google Sheets on 20 March 2026.** See [SUPABASE_MIGRATION_GUIDE.md](./guides/SUPABASE_MIGRATION_GUIDE.md) for full details.
+> **RLS Hardened:** v4.3.1 — Row Level Security enabled on all 3 tables with service_role policies.
 >
 > **Supabase Project:** Configure via n8n Supabase API credential
 > **Schema File:** `n8n/supabase_schema.sql`
@@ -502,9 +549,11 @@ Logs every signal generated (now including WAIT, AVOID, and SIDEWAYS).
 | SuperTrend | String | Bullish / Bearish |
 | Reason | String | Detailed logic trace (e.g. RSI Bullish \| EMA20 Bullish) |
 
-### Table 2: active_trades
+### Table 2: active_exit_orders
 
-Tracks currently open positions within PostgreSQL.
+> **Actual Supabase table name:** `active_exit_orders` (not `active_trades`)
+
+Tracks currently open positions and their SL/Target exit orders within PostgreSQL.
 
 | Column | Type | Description |
 |---|---|---|
@@ -529,7 +578,9 @@ Tracks currently open positions within PostgreSQL.
 | Exit Timestamp | DateTime | Exit time |
 | Execution Time | String | Time taken to execute |
 
-### Table 3: trade_summary
+### Table 3: trades
+
+> **Actual Supabase table name:** `trades` (not `trade_summary`)
 
 Permanent PostgreSQL record of all completed trades.
 
@@ -559,28 +610,33 @@ Permanent PostgreSQL record of all completed trades.
 
 ---
 
-## 9. React Frontend
+## 11. React Frontend
 
 ### Technology Stack
 - **React 18** (functional components, hooks)
-- **Vite** (build tool, dev server at localhost:5173)
+- **Vite 5** (build tool, dev server at localhost:5173)
 - **TypeScript** (strict mode enabled)
-- **React Router v6** (client-side routing)
+- **React Router v7** (client-side routing)
 - **Recharts** (AreaChart, BarChart, PieChart)
 - **Lucide React** (icons)
-- **Axios** (HTTP client for Sheets + TradingView)
+- **Supabase JS v2** (primary data source)
+- **Axios** (HTTP client for TradingView + Engine health)
 - **Vanilla CSS** (design system in `index.css`)
 
-### Pages
+### Pages (11 Total)
 
 | Route | Component | Data Source | Key Features |
 |---|---|---|---|
-| `/` | DashboardPage | All sheets + TradingView | 8 KPI cards, equity curve, signal feed, active positions |
+| `/` | DashboardPage | Supabase + TradingView | 8 KPI cards, equity curve, signal feed, active positions |
 | `/signals` | SignalsPage | Supabase: signals | Expandable rows, complete 64-column dataset |
-| `/trades` | TradesPage | Supabase: active/summary | Active position cards, closed trades table |
-| `/history` | HistoryPage | Supabase: trade_summary | Filter by WIN/LOSS/CE/PE/ACTIVE, search |
-| `/analytics` | AnalyticsPage | Supabase: trade_summary | Bar chart, equity curve, exit pie, VIX buckets |
-| `/backtest` | BacktestPage | Supabase: signals + summary | **Strategy Tester**: Real-market verified backtesting with deterministic simulation |
+| `/trades` | TradesPage | Supabase: active_exit_orders / trades | Active position cards, closed trades table |
+| `/history` | HistoryPage | Supabase: trades | Filter by WIN/LOSS/CE/PE/ACTIVE, search |
+| `/analytics` | AnalyticsPage | Supabase: trades | Bar chart, equity curve, exit pie, VIX buckets |
+| `/backtest` | BacktestPage | Supabase: signals + trades | **Strategy Tester**: Real-market verified backtesting |
+| `/validation` | ValidationPage | Supabase: signals | **Signal Audit**: Accuracy verification against live index |
+| `/engine` | PythonEnginePage | localhost:8000/health | **Engine Telemetry**: Python API diagnostics & service health |
+| `/xai` | XAIPage | Supabase: signals | **AI Explainability**: Feature importance & model interpretation |
+| `/tuning` | StrategyTuningPage | Supabase: signals | **Strategy Tuning**: Dynamic parameter optimization |
 | `/settings` | SettingsPage | — | Config reference, risk params, quick links |
 
 ### Data Architecture
@@ -615,7 +671,7 @@ Pages consume useTrading() directly
 
 ---
 
-## 10. Strategy Tester (Backtest System)
+## 12. Strategy Tester (Backtest System)
 
 The Strategy Tester (`BacktestPage.tsx`) provides a professional environment for validating trading rules against historical signal data and real-world outcomes.
 
@@ -652,7 +708,7 @@ Verified Status = TRUE                                          Verified Status 
 
 ---
 
-## 11. APIs & External Services
+## 13. APIs & External Services
 
 ### Angel One SmartAPI
 - **Purpose:** OHLCV market data for technical indicator calculation
@@ -685,7 +741,7 @@ Verified Status = TRUE                                          Verified Status 
 
 ---
 
-## 11. Known Bugs & Fixes Applied
+## 14. Known Bugs & Fixes Applied
 
 ### Bug #1 — Wrong node names in signal Code1
 - **Problem:** Referenced `Calculate All Technical Indicators` and `Writers Zone Analysis` (missing "1" suffix)
@@ -808,7 +864,7 @@ Verified Status = TRUE                                          Verified Status 
 
 ---
 
-## 12. Configuration Reference
+## 15. Configuration Reference
 
 ### Signal Engine Thresholds (in `signal Code1` → CONFIG block)
 
@@ -864,7 +920,7 @@ export const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
 
 ---
 
-## 13. Deployment Guide
+## 16. Deployment Guide
 
 ### n8n Setup
 
@@ -903,7 +959,7 @@ npm run build        # Outputs to dist/
 
 ---
 
-## 14. Troubleshooting
+## 17. Troubleshooting
 
 ### Frontend shows no data
 
@@ -931,7 +987,7 @@ npm run build        # Outputs to dist/
 
 ### Frontend equity curve is empty
 
-- Normal if the `trade_summary` table has no closed trades yet
+- Normal if the `trades` table has no closed trades yet
 - Check `Status` column values — closed trades should NOT be `ACTIVE` or `OPEN`
 - `PnL` column must be non-zero for trades to appear in the curve
 
@@ -953,7 +1009,7 @@ Session reports are stored in `docs/reports/`. Each session generates a report w
 
 ---
 
-## 16. COMPLETED: Supabase Migration (March 2026)
+## 18. COMPLETED: Supabase Migration (March 2026)
 
 To scale the bot from a prototype to a professional trading platform, the data layer was migrated to **Supabase**.
 
@@ -977,6 +1033,14 @@ Supabase replaced both Google Drive (for storage) and Google Sheets (for data lo
 ---
 
 ## 19. Version Changelog
+
+### v4.3.1 — 28 March 2026
+**Security Hardening & Structural Cleanup**
+- **Row Level Security (RLS):** Enabled on all 3 Supabase tables (`signals`, `active_exit_orders`, `trades`) with service_role full-access policies.
+- **Project Root Cleanup:** Relocated legacy scripts and files; organized `start/` directory with dedicated `.bat` launchers for n8n, Python API, and React webapp.
+- **Git Branch:** `cleanup/v4.3.1-security-and-structure` created and pushed.
+- **Documentation Audit:** PROJECT_DOCUMENT.md fully synchronized to true filesystem state — fixed section numbering, corrected table names (`active_exit_orders`, `trades`), added 4 missing React pages.
+- **SQL Views Added:** `completed_trades_summary`, `daily_pnl_summary`, `signal_accuracy` views created in `supabase_schema.sql`.
 
 ### v4.3.0 — 25 March 2026
 **Survivorship Bias Fix & 64-Column Data Pipeline**
@@ -1135,9 +1199,9 @@ Supabase replaced both Google Drive (for storage) and Google Sheets (for data lo
 
 ---
 
-## 19. 1-Week Live Test Plan (02–06 March 2026)
+## ~~19. 1-Week Live Test Plan (02–06 March 2026)~~ — COMPLETED ✅
 
-**Objective:** Collect 5 full sessions of live signal data under v2.2 to understand NIFTY market behaviour, signal distribution, and confidence score patterns — before tuning thresholds.
+> **Status:** COMPLETED. Data collected was analyzed on 06 March 2026 and led directly to the complete v3.0 engine rebuild. Thresholds were raised to ±25. See v3.0.0 changelog above.
 
 ### Test Parameters (Locked for the Week)
 
@@ -1184,7 +1248,9 @@ Bring the full week's data here. The AI will generate:
 
 ---
 
-## 16. Live Session Reports
+## 16. Live Session Reports (Archived)
+
+> **Note:** Historical session reports from the v2.x era are preserved below for completeness. Active session tracking has moved to `docs/sessions/`.
 
 ### session_02MAR2026: The V-Reversal Day
 **Market Narrative:**
@@ -1222,5 +1288,5 @@ The session started with a bearish bias reaching 24,700 around noon. At 14:05, t
 
 ---
 
-*This document was last updated: 26 March 2026, 00:35 IST (v4.3.0 — ML Pipeline Data Finalization)*
+*This document was last updated: 28 March 2026, 20:15 IST (v4.3.1 — Security Hardening & Full Documentation Sync)*
 *Maintained as a persistent journal by the AI agent alongside every code change*

@@ -732,11 +732,11 @@
               "fieldValue": "={{ JSON.stringify($json.gammaExposure || {}) }}"
             },
             {
-              "fieldId": "Gamma_Flip Level",
+              "fieldId": "gamma_flip_level",
               "fieldValue": "={{ $json.gammaExposure?.gamma_flip }}"
             },
             {
-              "fieldId": "GEX_Regime",
+              "fieldId": "gex_regime",
               "fieldValue": "={{ $json.gammaExposure?.regime }}"
             },
             {
@@ -744,7 +744,7 @@
               "fieldValue": "={{ JSON.stringify($json.ivSkew || {}) }}"
             },
             {
-              "fieldId": "IV_skew_bias",
+              "fieldId": "iv_skew_bias",
               "fieldValue": "={{ $json.ivSkew?.bias }}"
             },
             {
@@ -784,11 +784,11 @@
               "fieldValue": "={{ $json.streakConfirmed }}"
             },
             {
-              "fieldId": "LastSignal",
+              "fieldId": "last_signal",
               "fieldValue": "={{ $json.lastSignal }}"
             },
             {
-              "fieldId": "LastFireTime",
+              "fieldId": "last_fire_time",
               "fieldValue": "={{ $json.lastFireTime }}"
             },
             {
