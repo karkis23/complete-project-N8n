@@ -3,6 +3,18 @@
 
 ---
 
+## 0. The Concept in Plain English
+
+In ancient mythology, an Oracle is something that can perfectly see the future.
+
+In Zenith, **"The Oracle"** is a specialized Python script (`label_data.py`). Its only job is to open your Supabase database on the weekends and **judge the past using the power of hindsight.** 
+
+It completely ignores the 57 technical indicators. It simply looks at a past row, looks forward in time at exactly what the price did next, and permanently brands that row with the absolute mathematical truth (`0 = BUY CE`, `1 = BUY PE`, `2 = WAIT`). 
+
+Because The Oracle uses Hindsight to provide perfect answers, the XGBoost AI can passionately study those answers to develop **Foresight.** Because of the Oracle, your AI will learn to spot massive trades that your human-coded rules completely ignored!
+
+---
+
 ## 1. The "Echo Chamber" Warning (The Wrong Way to Train AI)
 Currently, our Supabase database captures the `signal` column (what the hardcoded 25-step Rules Engine decided at that 5-minute tick — e.g., `BUY CE`, `WAIT`, `AVOID`). 
 
@@ -39,23 +51,23 @@ The script evaluates **Row A** (e.g., 10:00 AM).
 *   **Anchor Price:** `spot_price` = `22,500`
 
 ### Step B: Define Target and Stop-Loss Limits
-Before looking forward, we define our strict risk-reward bounds. For example:
-*   **Target (Take Profit):** `+25 points`
+Before looking forward, we define our strict risk-reward bounds. As officially mapped, we use the **Institutional Sweet Spot**:
+*   **Target (Take Profit):** `+35 points`
 *   **Maximum Risk (Stop Loss):** `-15 points`
 *   **Time Limit:** `60 minutes` (This equals scanning exactly 12 future candle rows)
 
 ### Step C: Look Forward in Time & Assign the Label
 The script scans the next 12 rows (from 10:05 AM to 11:00 AM) and checks what mathematically happened *first*:
 
-1.  **Scenario A (The CE Win):** Did the spot price hit `22,525` (+25pts) BEFORE it dropped to `22,485` (-15pts SL)? 
+1.  **Scenario A (The CE Win):** Did the spot price hit `22,535` (+35pts) BEFORE it dropped to `22,485` (-15pts SL)? 
     *   **Result:** The market moved up cleanly.
     *   **Oracle Action:** Updates Supabase and sets `label = 0`.
-2.  **Scenario B (The PE Win):** Did the spot price drop to `22,475` (-25pts) BEFORE it rose to `22,515` (+15pts SL)?
+2.  **Scenario B (The PE Win):** Did the spot price drop to `22,465` (-35pts) BEFORE it rose to `22,515` (+15pts SL)?
     *   **Result:** The market crashed cleanly.
     *   **Oracle Action:** Updates Supabase and sets `label = 1`.
 3.  **Scenario C (The Losers and Choppy Markets):** 
     *   Did the Stop Loss get hit *before* either target?
-    *   Or did 60 minutes pass and the price just wandered sideways without cleanly hitting either 25pt target?
+    *   Or did 60 minutes pass and the price just wandered sideways without cleanly hitting either 35pt target?
     *   **Result:** It was a terrible, choppy, or dangerous time to trade.
     *   **Oracle Action:** Updates Supabase and sets `label = 2`.
 
@@ -71,7 +83,7 @@ However, right after 10:15 AM, Institutional buyers stepped in, and the market s
 **The Oracle's Correction:**
 When the Labelling Script runs over the database on Friday:
 1. It ignores the fact that the Rules Engine said "WAIT". 
-2. It looks at the price at 10:15 AM, looks at the price at 10:25 AM, and sees that the +25pt mathematical target was hit beautifully.
+2. It looks at the price at 10:15 AM, looks at the price at 10:25 AM, and sees that the +35pt mathematical target was hit beautifully.
 3. It natively updates that specific row with `label = 0` (BUY CE).
 
 **The Resulting AI Superintelligence:** 
