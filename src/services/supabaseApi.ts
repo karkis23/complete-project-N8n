@@ -109,15 +109,31 @@ export interface TradeSummary {
 // ============================================================
 
 export async function fetchSignals(limit = 100): Promise<LiveSignal[]> {
-    const { data, error } = await supabase
-        .from('signals')
-        .select('*')
-        .order('timestamp', { ascending: false })
-        .limit(limit);
+    let allData: any[] = [];
+    let from = 0;
+    
+    // Fetch in batches of 1000 (Supabase/PostgREST default limit)
+    while (from < limit) {
+        const stepLimit = Math.min(1000, limit - from);
+        const { data, error } = await supabase
+            .from('signals')
+            .select('*')
+            .order('timestamp', { ascending: false })
+            .range(from, from + stepLimit - 1);
 
-    if (error) {
-        console.error('Error fetching signals from Supabase:', error);
-        return [];
+        if (error) {
+            console.error('Error fetching signals from Supabase:', error);
+            break;
+        }
+
+        if (!data || data.length === 0) break;
+        
+        allData = [...allData, ...data];
+        
+        // If we got fewer than 1000 records, we've reached the end of the table
+        if (data.length < 1000) break;
+        
+        from += 1000;
     }
 
     const parseJSONNum = (val: any, fieldKey: string): number => {
@@ -140,7 +156,7 @@ export async function fetchSignals(limit = 100): Promise<LiveSignal[]> {
         return 0;
     };
 
-    return (data || []).map(r => ({
+    return allData.map(r => ({
         id: r.id,
         timestamp: r.timestamp,
         finalSignal: r.signal,
@@ -219,18 +235,31 @@ export async function fetchActiveTrades(): Promise<ActiveTrade[]> {
 }
 
 export async function fetchTradeSummary(limit = 100): Promise<TradeSummary[]> {
-    const { data, error } = await supabase
-        .from('trades')
-        .select('*')
-        .order('timestamp', { ascending: false })
-        .limit(limit);
+    let allData: any[] = [];
+    let from = 0;
 
-    if (error) {
-        console.error('Error fetching trade summary from Supabase:', error);
-        return [];
+    while (from < limit) {
+        const stepLimit = Math.min(1000, limit - from);
+        const { data, error } = await supabase
+            .from('trades')
+            .select('*')
+            .order('timestamp', { ascending: false })
+            .range(from, from + stepLimit - 1);
+
+        if (error) {
+            console.error('Error fetching trade summary from Supabase:', error);
+            break;
+        }
+
+        if (!data || data.length === 0) break;
+        
+        allData = [...allData, ...data];
+        if (data.length < 1000) break;
+        
+        from += 1000;
     }
 
-    return (data || []).map(r => ({
+    return allData.map(r => ({
         entryOrderId: r.entry_order_id,
         timestamp: r.timestamp,
         signal: r.signal,

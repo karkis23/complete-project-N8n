@@ -83,9 +83,9 @@ export function useTrading(): TradingState {
 
             // Fetch primary trade data in parallel
             const [sigsResult, tradesResult, summaryResult] = await Promise.allSettled([
-                fetchSignals(5000),
+                fetchSignals(20000), 
                 fetchActiveTrades(),
-                fetchTradeSummary(),
+                fetchTradeSummary(5000),
             ]);
 
             let latestSignals: LiveSignal[] = [];

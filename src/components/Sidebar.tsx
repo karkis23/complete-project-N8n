@@ -67,7 +67,7 @@ const navGroups: { label: string; items: NavItem[] }[] = [
     }
 ];
 
-export default function Sidebar({ systemStatus = 'online', activeTrades = 0, connections }: SidebarProps) {
+export default function Sidebar({ systemStatus = 'online', activeTrades = 0 }: SidebarProps) {
     return (
         <aside className="sidebar" style={{ 
             background: 'var(--bg-surface)', 
@@ -75,52 +75,63 @@ export default function Sidebar({ systemStatus = 'online', activeTrades = 0, con
             display: 'flex', flexDirection: 'column',
             boxShadow: '4px 0 24px rgba(0,0,0,0.02)'
         }}>
-            {/* Logo Section */}
+            {/* Elegant Compact Logo Section */}
             <div style={{
-                padding: '28px 20px 24px',
+                padding: '24px 20px',
                 position: 'relative',
                 overflow: 'hidden',
-                display: 'flex', flexDirection: 'column', alignItems: 'center', textAlign: 'center'
+                display: 'flex', alignItems: 'center', justifyContent: 'center'
             }}>
-                {/* Background ambient glow matching theme */}
+                {/* Refined ambient glow */}
                 <div style={{
-                    position: 'absolute', top: '-60px', left: '50%', transform: 'translateX(-50%)',
-                    width: '160px', height: '160px',
-                    background: 'var(--accent-glow)', filter: 'blur(50px)',
-                    opacity: 0.25, borderRadius: '50%', pointerEvents: 'none'
+                    position: 'absolute', top: '50%', left: '50%', transform: 'translate(-50%, -50%)',
+                    width: '140px', height: '60px',
+                    background: 'var(--accent-glow)', filter: 'blur(35px)',
+                    opacity: 0.12, borderRadius: '50%', pointerEvents: 'none'
                 }} />
 
-                <div style={{ position: 'relative', zIndex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+                <div style={{ 
+                    position: 'relative', zIndex: 1, 
+                    display: 'flex', alignItems: 'center', gap: '14px' 
+                }}>
                     <div style={{
                         background: 'linear-gradient(135deg, var(--bg-elevated) 0%, var(--bg-surface) 100%)',
-                        padding: '12px', borderRadius: '16px',
-                        boxShadow: '0 8px 32px var(--shadow-sm), inset 0 1px 1px rgba(255,255,255,0.1)',
-                        border: '1px solid var(--border)',
-                        marginBottom: '16px'
+                        padding: '10px', borderRadius: '12px',
+                        boxShadow: '0 4px 20px rgba(0,0,0,0.2), inset 0 1px 1px rgba(255,255,255,0.05)',
+                        border: '1px solid var(--border-strong)',
+                        display: 'flex', alignItems: 'center', justifyContent: 'center'
                     }}>
-                        <ZenithLogo size={38} />
+                        <ZenithLogo size={28} />
                     </div>
                     
-                    <div style={{ textAlign: 'center' }}>
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '2px' }}>
                         <div style={{
-                            fontSize: '22px', fontWeight: 900,
-                            letterSpacing: '0.04em', color: 'var(--text-1)',
-                            lineHeight: 1, textShadow: '0 2px 20px var(--accent-glow)'
+                            fontSize: '18px', fontWeight: 900,
+                            letterSpacing: '0.06em', color: 'var(--text-1)',
+                            lineHeight: 1.1,
+                            background: 'linear-gradient(to right, #fff, var(--text-2))',
+                            WebkitBackgroundClip: 'text',
+                            WebkitTextFillColor: 'transparent'
                         }}>
                             ZENITH
                         </div>
                         <div style={{
-                            fontSize: '9px', fontWeight: 800,
-                            letterSpacing: '0.2em', color: 'var(--accent)',
-                            textTransform: 'uppercase', marginTop: '8px',
-                            background: 'var(--accent-dim)', padding: '4px 10px',
-                            borderRadius: '100px', display: 'inline-block',
-                            border: '1px solid rgba(80, 70, 229, 0.2)'
+                            fontSize: '7.5px', fontWeight: 800,
+                            letterSpacing: '0.18em', color: 'var(--accent-light)',
+                            textTransform: 'uppercase',
+                            opacity: 0.9,
+                            display: 'flex', alignItems: 'center', gap: '4px'
                         }}>
+                            <span style={{ width: '4px', height: '1px', background: 'var(--accent)', opacity: 0.5 }} />
                             Quantum Terminal
                         </div>
                     </div>
                 </div>
+            </div>
+            
+            {/* Subtle separator */}
+            <div style={{ padding: '0 20px', marginBottom: '12px' }}>
+                <div style={{ height: '1px', background: 'linear-gradient(90deg, transparent, var(--border), transparent)', opacity: 0.5 }} />
             </div>
 
             {/* Navigation */}
@@ -216,101 +227,72 @@ export default function Sidebar({ systemStatus = 'online', activeTrades = 0, con
                 ))}
             </nav>
 
-            {/* Enhanced Footer Status */}
+            {/* Compact & Elegant Status Cockpit */}
             <div style={{
-                padding: '16px 16px 20px',
+                padding: '16px 14px 20px',
                 marginTop: 'auto',
-                borderTop: '1px solid var(--border)',
-                background: 'linear-gradient(to top, var(--bg-surface), transparent)'
+                borderTop: '1px solid var(--border-subtle)',
             }}>
-
                 <div style={{
                     position: 'relative',
-                    overflow: 'hidden',
                     borderRadius: '16px',
-                    background: systemStatus === 'online' 
-                        ? 'linear-gradient(135deg, rgba(34, 197, 94, 0.08) 0%, rgba(34, 197, 94, 0.01) 100%)'
-                        : systemStatus === 'warning'
-                            ? 'linear-gradient(135deg, rgba(234, 179, 8, 0.08) 0%, rgba(234, 179, 8, 0.01) 100%)'
-                            : 'linear-gradient(135deg, rgba(239, 68, 68, 0.08) 0%, rgba(239, 68, 68, 0.01) 100%)',
-                    border: '1px solid',
-                    borderColor: systemStatus === 'online' ? 'rgba(34, 197, 94, 0.2)' 
-                            : systemStatus === 'warning' ? 'rgba(234, 179, 8, 0.2)' : 'rgba(239, 68, 68, 0.2)',
                     padding: '12px 14px',
-                    boxShadow: systemStatus === 'online' 
-                        ? '0 10px 30px -10px rgba(34, 197, 94, 0.15), inset 0 1px 0 rgba(255, 255, 255, 0.05)'
-                        : systemStatus === 'warning'
-                            ? '0 10px 30px -10px rgba(234, 179, 8, 0.15), inset 0 1px 0 rgba(255, 255, 255, 0.05)'
-                            : '0 10px 30px -10px rgba(239, 68, 68, 0.15), inset 0 1px 0 rgba(255, 255, 255, 0.05)',
-                    backdropFilter: 'blur(10px)',
-                    cursor: 'default',
-                    transition: 'all 0.3s ease'
-                }} className="footer-status-card">
-                    {/* Subtle Glow Behind */}
-                    <div style={{
-                        position: 'absolute', top: -20, right: -20,
-                        width: '80px', height: '80px',
-                        background: systemStatus === 'online' ? 'var(--profit)' 
-                                : systemStatus === 'warning' ? '#eab308' : 'var(--loss)',
-                        filter: 'blur(40px)', opacity: 0.15, pointerEvents: 'none',
-                        borderRadius: '50%'
-                    }} />
-
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '10px', position: 'relative', zIndex: 1 }}>
+                    background: 'linear-gradient(135deg, rgba(255,255,255,0.05) 0%, rgba(255,255,255,0.01) 100%)',
+                    backdropFilter: 'blur(12px)',
+                    border: '1px solid rgba(255, 255, 255, 0.08)',
+                    boxShadow: '0 8px 32px rgba(0,0,0,0.4)',
+                    overflow: 'hidden',
+                }} className="glass-card-hover">
+                    
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '12px', position: 'relative', zIndex: 1 }}>
                         <div style={{
-                            width: '34px', height: '34px', flexShrink: 0,
+                            width: '32px', height: '32px',
                             display: 'flex', alignItems: 'center', justifyContent: 'center',
                             borderRadius: '10px',
-                            background: systemStatus === 'online' ? 'rgba(34, 197, 94, 0.1)' 
-                                    : systemStatus === 'warning' ? 'rgba(234, 179, 8, 0.1)' : 'rgba(239, 68, 68, 0.1)',
-                            border: `1px solid ${systemStatus === 'online' ? 'rgba(34, 197, 94, 0.2)' 
-                                    : systemStatus === 'warning' ? 'rgba(234, 179, 8, 0.2)' : 'rgba(239, 68, 68, 0.2)'}`,
-                            color: systemStatus === 'online' ? '#22c55e' 
-                                    : systemStatus === 'warning' ? '#eab308' : '#ef4444',
-                            boxShadow: `inset 0 2px 10px ${systemStatus === 'online' ? 'rgba(34, 197, 94, 0.05)' 
-                                    : systemStatus === 'warning' ? 'rgba(234, 179, 8, 0.05)' : 'rgba(239, 68, 68, 0.05)'}`
+                            background: systemStatus === 'online' ? 'rgba(34, 197, 94, 0.12)' 
+                                    : systemStatus === 'warning' ? 'rgba(234, 179, 8, 0.12)' : 'rgba(239, 68, 68, 0.12)',
+                            color: systemStatus === 'online' ? '#4ade80' 
+                                    : systemStatus === 'warning' ? '#facc15' : '#fb7185',
+                            flexShrink: 0
                         }}>
-                            <Cpu size={16} strokeWidth={2.5} />
+                            <Cpu size={16} strokeWidth={2.4} />
                         </div>
-
+                        
                         <div style={{ flex: 1, minWidth: 0 }}>
                             <div style={{
-                                display: 'flex', alignItems: 'center', gap: '6px',
                                 fontSize: '13px', fontWeight: 800,
                                 color: 'var(--text-1)', letterSpacing: '-0.01em',
-                                textShadow: '0 2px 10px rgba(0,0,0,0.2)'
-                            }}>
-                                <span style={{ whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
-                                    {systemStatus === 'online' ? 'Cluster Active' : systemStatus === 'warning' ? 'Cluster Degraded' : 'System Guard'}
-                                </span>
-                                <div style={{
-                                    width: '6px', height: '6px', borderRadius: '50%', flexShrink: 0,
-                                    background: systemStatus === 'online' ? '#22c55e' 
-                                            : systemStatus === 'warning' ? '#eab308' : '#ef4444',
-                                    boxShadow: `0 0 12px 2px ${systemStatus === 'online' ? 'rgba(34, 197, 94, 0.4)' 
-                                            : systemStatus === 'warning' ? 'rgba(234, 179, 8, 0.4)' : 'rgba(239, 68, 68, 0.4)'}`
-                                }} className={systemStatus === 'online' ? 'dot-pulse' : ''} />
-                            </div>
-                            <div style={{
-                                fontSize: '9.5px', fontWeight: 700,
-                                color: 'var(--text-3)', textTransform: 'uppercase',
-                                letterSpacing: '0.04em', marginTop: '3px',
-                                display: 'flex', alignItems: 'center', gap: '4px',
                                 whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis'
                             }}>
-                                {systemStatus === 'online' ? (
-                                    <>
-                                        <span style={{ color: 'var(--accent-light)', flexShrink: 0 }}>v4.2.0</span>
-                                        <span style={{ opacity: 0.3, flexShrink: 0 }}>|</span>
-                                        <span style={{ overflow: 'hidden', textOverflow: 'ellipsis' }}>Telemetry Sync</span>
-                                    </>
-                                ) : systemStatus === 'warning' ? (
-                                    <span style={{ color: '#eab308' }}>Sync Delayed</span>
-                                ) : (
-                                    <span style={{ color: '#ef4444' }}>Intervention Req.</span>
-                                )}
+                                {systemStatus === 'online' ? 'Cluster Active' : systemStatus === 'warning' ? 'Degraded' : 'Guarded'}
+                            </div>
+                            <div style={{
+                                display: 'flex', alignItems: 'center', gap: '5px', marginTop: '2px'
+                            }}>
+                                <span style={{ fontSize: '8px', fontWeight: 800, color: 'var(--accent-light)' }}>v4.3.0</span>
+                                <span style={{ width: '2px', height: '2px', borderRadius: '50%', background: 'rgba(255,255,255,0.2)' }} />
+                                <span style={{ fontSize: '8px', fontWeight: 700, color: 'var(--text-4)', textTransform: 'uppercase' }}>Sync Active</span>
                             </div>
                         </div>
+
+                        <div style={{
+                            width: '6px', height: '6px', borderRadius: '50%',
+                            background: systemStatus === 'online' ? '#22c55e' 
+                                    : systemStatus === 'warning' ? '#eab308' : '#ef4444',
+                            boxShadow: `0 0 10px ${systemStatus === 'online' ? '#22c55e' : systemStatus === 'warning' ? '#eab308' : '#ef4444'}`
+                        }} className="dot-pulse" />
+                    </div>
+
+                    {/* Minimalist health footer */}
+                    <div style={{ 
+                        height: '2px', width: '100%', background: 'rgba(255,255,255,0.03)', 
+                        marginTop: '10px', borderRadius: '1px', overflow: 'hidden' 
+                    }}>
+                        <div style={{ 
+                            height: '100%', width: systemStatus === 'online' ? '100%' : '70%', 
+                            background: systemStatus === 'online' ? 'var(--profit)' : '#eab308', 
+                            opacity: 0.4 
+                        }} className="shimmer" />
                     </div>
                 </div>
             </div>
