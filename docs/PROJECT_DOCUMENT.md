@@ -1,7 +1,7 @@
 # 📊 ZENITH: Complete System Technical Documentation
 
-> **Version:** 4.3.1 (Security Hardening & Structural Cleanup)
-> **Last Updated:** 28 March 2026
+> **Version:** 4.3.2 (Advanced Data Scaling & High-Performance UI)
+> **Last Updated:** 30 March 2026
 > **Aesthetic:** ZENITH Professional Midnight
 > **Core Guide:** [ZENITH_SYSTEM_HANDBOOK.md](./ZENITH_SYSTEM_HANDBOOK.md)
 > **Architecture Diagrams:** [diagram.md](./diagram.md)
@@ -29,6 +29,7 @@
 17. [Troubleshooting](#17-troubleshooting)
 18. [Supabase Migration](#18-completed-supabase-migration)
 19. [Version Changelog](#19-version-changelog)
+20. [Strategic Roadmap (AI Evolution)](#20-strategic-roadmap-ai-evolution)
 
 ---
 
@@ -1288,5 +1289,24 @@ The session started with a bearish bias reaching 24,700 around noon. At 14:05, t
 
 ---
 
-*This document was last updated: 28 March 2026, 20:15 IST (v4.3.1 — Security Hardening & Full Documentation Sync)*
+## 20. Strategic Roadmap (AI Evolution)
+
+### Phase 1: The Oracle Activation (Current)
+The focus is on transforming the 1,000+ logged signals into labeled training data.
+- **The Oracle Protocol**: A retroactive labeling script that looks at price outcomes 60m after each signal.
+- **Goal**: Populate the `label` column in Supabase with `0` (CE), `1` (PE), or `2` (WAIT).
+
+### Phase 2: Intelligence Birth (XGBoost)
+- Execute `train_model.py` using the newly labeled data.
+- Integrate the `xgboost_model.json` into the `signal_engine.py`.
+- Activate `ENGINE_MODE=AI_ENSEMBLE`.
+
+### Phase 3: Operational Scaling
+- Implement **Paper Trading** toggle in the terminal.
+- Transition from 2-minute polling to **Supabase Realtime** (WebSockets).
+- Deploy **Dockerized Stack** for 24/7 reliability.
+
+---
+
+*This document was last updated: 28 March 2026, 23:55 IST (v4.3.1 — Full Audit & Strategic Roadmap)*
 *Maintained as a persistent journal by the AI agent alongside every code change*

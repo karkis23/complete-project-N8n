@@ -1,7 +1,7 @@
 # 🏙️ ZENITH: The Complete Terminal Specification
 
-> **Version:** 1.3 (Institutional Standard)
-> **Revision Date:** 2026-03-11
+> **Version:** 1.4 (Quantum Standard)
+> **Revision Date:** 2026-03-30
 > **Author:** Zenith Engineering Group
 
 ---
@@ -48,14 +48,15 @@ The ZENITH interface is designed for "Extended Mission Monitoring."
 
 ### Layout Hierarchy
 1.  **Header:** Global system health, market status (NIFTY/VIX), and primary controls.
-2.  **Sidebar:** Navigation through Terminal Hubs (Overview, Signals, Positions, etc.).
-3.  **Active Workspace:** The primary data area, featuring fading transitions and slide-up animations for smooth state updates.
+2.  **Sidebar (Quantum v4.3):** High-density horizontal branding and modular navigation.
+3.  **Active Workspace:** The primary data area, featuring fading transitions and slide-up animations.
+4.  **Status Cockpit:** Floating glassmorphism footer with integrated diagnostic telemetry (VIX, Sync, Version).
 
 ### Design Tokens
-- **Background:** Midnight Slate (`#020617`).
-- **Surface:** Glassmorphic translucent overlays.
+- **Background:** Midnight Obsidian (`#030307`).
+- **Surface:** Glassmorphic translucent overlays with 20px blur.
 - **Typography:** Inter (Standard) / JetBrains Mono (Numeric/Financial Data).
-- **Accents:** Azure Blue (`#3b82f6`) for system highlights, Emerald/Red for market direction.
+- **Branding:** Quantum Azure Gradient (`#5046e5` to `#8b5cf6`).
 
 ---
 
