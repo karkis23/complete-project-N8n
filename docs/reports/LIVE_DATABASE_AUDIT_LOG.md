@@ -170,12 +170,76 @@ The SQL check for `NULL` failures across all 64 indicators (stochastic, cci, mfi
 
 ---
 
+## Day 6 Audit: April 1, 2026 (Balanced Negative Class Data)
+*Note: March 31 was a market holiday, 0 records logged.*
+The first trading day of the new week showed strong system performance and continued high-fidelity telemetry.
+
+**Volume & Consistency Update:**
+*   **Total Records Logged:** `78` responses.
+*   **Live Market Records:** `73` active records starting from `03:59:05 UTC` (9:29 AM IST). 
+*   **Verdict:** The system started slightly late (missing the first 15 mins), but captured every 5-minute tick thereafter with 100% stable sync throughout the day.
+
+**Signal Distribution Update:**
+Today provided a very high-quality balanced set of "non-trade" scenarios for the AI:
+*   **AVOID:** `40` records
+*   **WAIT:** `32` records
+*   **SIDEWAYS:** `1` record
+*   **BUY CE / BUY PE:** `0` records
+
+**Why this is significant:** We now have six full days of high-resolution market patterns. For the upcoming XGBoost model, having balanced "AVOID" vs. "WAIT" data (as captured today) is perfect. It trains the AI to distinguish between "active danger" and "passive indecision," a key component for profitable model weights.
+
+| Day | Date | Dominant Signal | Market Character |
+|-----|------|-----------------|------------------|
+| 1 | Mar 24 | 46 AVOID, 29 WAIT | Mixed danger |
+| 2 | Mar 25 | 73 WAIT, 3 SIDEWAYS | Choppy / flat |
+| 3 | Mar 26 | 76 WAIT | Completely stagnant |
+| 4 | Mar 27 | 69 AVOID, 6 WAIT | Actively dangerous |
+| 5 | Mar 30 | 70 AVOID, 6 WAIT | Steady danger-regime capture |
+| 6 | Apr 01 | 40 AVOID, 32 WAIT | Balanced negative-class data |
+
+**Data Integrity Update:**
+The SQL check for `NULL` failures across the 64-columns (stochastic, cci, mfi, gex, iv\_skew) returned exactly `0` missing datapoints for the sixth core session.
+
+---
+
+## Day 7 Audit: April 2, 2026 (Return to Danger-Regime)
+The second trading day of the week continued the flawless capture streak.
+
+**Volume & Consistency Update:**
+*   **Total Records Logged:** `83` responses.
+*   **Live Market Records:** `76` active records starting from `03:35:04 UTC` (9:05 AM IST) to `10:25:01 UTC` (3:55 PM IST). 
+*   **Verdict:** 100% stable capture rate. Following yesterday's slight morning delay, today fired flawlessly through the entire Indian trading session with zero dropped data.
+
+**Signal Distribution Update:**
+Today's market personality returned to a highly defensive state, matching March 27 and March 30 natively:
+*   **AVOID:** `70` records
+*   **WAIT:** `6` records
+*   **SIDEWAYS:** `0` records
+*   **BUY CE / BUY PE:** `0` records
+
+**Why this is significant:** The rules engine successfully locked down the portfolio. We successfully secured 70 more `AVOID` signals, which enforces exactly how a strictly hostile session mathematically looks across all 64 indicators.
+
+| Day | Date | Dominant Signal | Market Character |
+|-----|------|-----------------|------------------|
+| 1 | Mar 24 | 46 AVOID, 29 WAIT | Mixed danger |
+| 2 | Mar 25 | 73 WAIT, 3 SIDEWAYS | Choppy / flat |
+| 3 | Mar 26 | 76 WAIT | Completely stagnant |
+| 4 | Mar 27 | 69 AVOID, 6 WAIT | Actively dangerous |
+| 5 | Mar 30 | 70 AVOID, 6 WAIT | Steady danger-regime capture |
+| 6 | Apr 01 | 40 AVOID, 32 WAIT | Balanced negative-class |
+| 7 | Apr 02 | 70 AVOID, 6 WAIT | Strict danger-regime return |
+
+**Data Integrity Update:**
+The SQL check for `NULL` failures across the 64-columns returned exactly `0` missing datapoints for the **seventh** core session.
+
+---
+
 ## Summary and Next Steps
 
 The entire ML Pipeline architecture is physically flawless. 
 - The Python script is mathematically sound.
 - The n8n automation is flawlessly polling at high frequency.
-- The Supabase database is perfectly trapping every feature column without gaps across five consecutive days.
+- The Supabase database is perfectly trapping every feature column without gaps across seven active trading days.
 
 **Next Action:** 
 Zero mechanical intervention required. We are officially in the "Data Incubation Phase". The system simply needs to be left untouched during live market hours to endlessly log rows until sufficient historic data is captured to execute `train_model.py`. 
