@@ -137,7 +137,7 @@ function runRealBacktest(config: any, signals: any[], tradeSummary: any[]): Back
 }
 
 const TooltipStyle = {
-    contentStyle: { background: 'var(--bg-elevated)', border: '1px solid var(--border)', borderRadius: '10px', fontSize: '12px', padding: '8px 12px' },
+    contentStyle: { background: 'rgba(255, 255, 255, 0.02)', backdropFilter: 'blur(10px)', border: '1px solid rgba(255,255,255,0.05)', borderRadius: '10px', fontSize: '12px', padding: '8px 12px' },
     itemStyle: { color: 'var(--text-1)', fontWeight: 600 },
     labelStyle: { color: 'var(--text-3)', fontSize: '11px' }
 };
@@ -152,8 +152,8 @@ const FieldGroup = ({ label, children }: { label: string; children: React.ReactN
 const StyledSelect = (props: React.SelectHTMLAttributes<HTMLSelectElement>) => (
     <select {...props} style={{
         width: '100%', height: '38px', padding: '0 12px',
-        borderRadius: 'var(--r-md)', border: '1px solid var(--border)',
-        background: 'var(--bg-elevated)', color: 'var(--text-1)',
+        borderRadius: 'var(--r-md)', border: '1px solid rgba(255,255,255,0.05)',
+        background: 'rgba(255, 255, 255, 0.02)', backdropFilter: 'blur(10px)', color: 'var(--text-1)',
         fontSize: '13px', fontFamily: 'inherit', outline: 'none',
         appearance: 'none', cursor: 'pointer', transition: 'var(--trans-s)'
     }} />
@@ -162,8 +162,8 @@ const StyledSelect = (props: React.SelectHTMLAttributes<HTMLSelectElement>) => (
 const StyledInput = (props: React.InputHTMLAttributes<HTMLInputElement>) => (
     <input {...props} style={{
         width: '100%', height: '38px', padding: '0 12px',
-        borderRadius: 'var(--r-md)', border: '1px solid var(--border)',
-        background: 'var(--bg-elevated)', color: 'var(--text-1)',
+        borderRadius: 'var(--r-md)', border: '1px solid rgba(255,255,255,0.05)',
+        background: 'rgba(255, 255, 255, 0.02)', backdropFilter: 'blur(10px)', color: 'var(--text-1)',
         fontSize: '13px', fontFamily: 'JetBrains Mono, monospace', outline: 'none', transition: 'var(--trans-s)'
     }} />
 );
@@ -211,7 +211,7 @@ export default function BacktestPage() {
                     <button onClick={() => setResult(null)} style={{
                         display: 'flex', alignItems: 'center', gap: '7px',
                         padding: '7px 16px', borderRadius: 'var(--r-md)',
-                        border: '1px solid var(--border)', background: 'var(--bg-elevated)',
+                        border: '1px solid rgba(255,255,255,0.05)', background: 'rgba(255, 255, 255, 0.02)', backdropFilter: 'blur(10px)',
                         color: 'var(--text-2)', fontSize: '12.5px', fontWeight: 600, cursor: 'pointer'
                     }}>
                         <RotateCcw size={13} /> New Simulation
@@ -223,7 +223,7 @@ export default function BacktestPage() {
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 320px', gap: '16px', alignItems: 'start' }}>
 
                 {/* Parameters Card */}
-                <div className="card" style={{ padding: '28px' }}>
+                <div className="glass-panel" style={{ padding: '28px' }}>
                     <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '24px' }}>
                         <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
                             <div style={{ width: 32, height: 32, borderRadius: 8, background: 'var(--accent-dim)', border: '1px solid rgba(99,102,241,0.2)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
@@ -308,7 +308,7 @@ export default function BacktestPage() {
                         </div>
 
                         {/* VIX filter */}
-                        <div style={{ gridColumn: 'span 2', padding: '16px', borderRadius: 'var(--r-lg)', background: 'var(--bg-elevated)', border: '1px solid var(--border)', display: 'flex', gap: '20px', alignItems: 'flex-start' }}>
+                        <div style={{ gridColumn: 'span 2', padding: '16px', borderRadius: 'var(--r-lg)', background: 'rgba(255, 255, 255, 0.02)', backdropFilter: 'blur(10px)', border: '1px solid rgba(255,255,255,0.05)', display: 'flex', gap: '20px', alignItems: 'flex-start' }}>
                             <FieldGroup label="VIX Limit">
                                 <StyledInput type="number" style={{ width: '100px' }}
                                     value={config.vixThreshold} min={10} max={40} step={0.5}
@@ -324,7 +324,7 @@ export default function BacktestPage() {
                             </div>
                         </div>
                         {/* Date Filter */}
-                        <div style={{ gridColumn: 'span 2', display: 'flex', flexDirection: 'column', gap: '10px', padding: '16px', borderRadius: 'var(--r-lg)', background: 'var(--bg-elevated)', border: '1px solid var(--border)' }}>
+                        <div style={{ gridColumn: 'span 2', display: 'flex', flexDirection: 'column', gap: '10px', padding: '16px', borderRadius: 'var(--r-lg)', background: 'rgba(255, 255, 255, 0.02)', backdropFilter: 'blur(10px)', border: '1px solid rgba(255,255,255,0.05)' }}>
                             <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '4px' }}>
                                 <Calendar size={14} color="var(--accent-light)" />
                                 <span style={{ fontSize: '10px', fontWeight: 700, color: 'var(--text-3)', textTransform: 'uppercase', letterSpacing: '0.08em' }}>Date Boundary Filter</span>
@@ -344,7 +344,7 @@ export default function BacktestPage() {
                     </div>
 
                     {/* R:R Derived */}
-                    <div style={{ marginTop: '20px', padding: '12px 16px', background: 'var(--bg-subtle)', borderRadius: 'var(--r-md)', border: '1px solid var(--border)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                    <div style={{ marginTop: '20px', padding: '12px 16px', background: 'var(--bg-subtle)', borderRadius: 'var(--r-md)', border: '1px solid rgba(255,255,255,0.05)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                         <span style={{ fontSize: '11.5px', color: 'var(--text-3)', fontWeight: 500 }}>Risk : Reward Ratio</span>
                         <span style={{ fontFamily: 'JetBrains Mono, monospace', fontWeight: 700, fontSize: '14px', color: parseFloat(rrRatio) >= 2 ? 'var(--profit)' : parseFloat(rrRatio) >= 1.5 ? 'var(--warn)' : 'var(--loss)' }}>
                             1 : {rrRatio}
@@ -354,7 +354,7 @@ export default function BacktestPage() {
 
                 {/* Launch Panel */}
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
-                    <div className="card" style={{ padding: '28px', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '24px', minHeight: '380px', justifyContent: 'center' }}>
+                    <div className="glass-panel" style={{ padding: '28px', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '24px', minHeight: '380px', justifyContent: 'center' }}>
                         <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px', width: '100%' }}>
                             {[
                                 { label: 'Qualified Signals', value: qualified, color: 'var(--text-1)' },
@@ -362,7 +362,7 @@ export default function BacktestPage() {
                                 { label: 'VIX Cap', value: config.vixThreshold, color: 'var(--warn)' },
                                 { label: 'Sample Total', value: signals.length, color: 'var(--text-2)' },
                             ].map(s => (
-                                <div key={s.label} style={{ padding: '14px', background: 'var(--bg-elevated)', borderRadius: 'var(--r-md)', border: '1px solid var(--border)' }}>
+                                <div key={s.label} style={{ padding: '14px', background: 'rgba(255, 255, 255, 0.02)', backdropFilter: 'blur(10px)', borderRadius: 'var(--r-md)', border: '1px solid rgba(255,255,255,0.05)' }}>
                                     <div style={{ fontSize: '9.5px', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.08em', color: 'var(--text-3)', marginBottom: '5px' }}>{s.label}</div>
                                     <div style={{ fontSize: '20px', fontWeight: 700, color: s.color, fontFamily: 'JetBrains Mono, monospace', letterSpacing: '-0.02em' }}>{s.value}</div>
                                 </div>
@@ -396,7 +396,7 @@ export default function BacktestPage() {
                     </div>
 
                     {result && (
-                        <div className="card slide-up" style={{
+                        <div className="glass-panel slide-up" style={{
                             padding: '18px 20px', display: 'flex', alignItems: 'center', gap: '14px',
                             background: 'var(--profit-dim)', border: '1px solid rgba(34,197,94,0.2)'
                         }}>
@@ -424,7 +424,7 @@ export default function BacktestPage() {
                             { label: 'Profit Factor', value: `${result.profitFactor}×`, icon: <Zap size={13} color="var(--accent-light)" />, color: 'var(--accent-light)', sub: result.profitFactor > 1.5 ? 'Elite level' : 'Building' },
                             { label: 'Max Drawdown', value: `-${result.maxDrawdown}%`, icon: <ShieldCheck size={13} color="var(--accent-light)" />, color: 'var(--loss)', sub: 'Peak measured' },
                         ].map(k => (
-                            <div key={k.label} className="kpi-card">
+                            <div key={k.label} className="glass-panel">
                                 <div className="kpi-label">{k.icon} {k.label}</div>
                                 <div className="kpi-value font-mono" style={{ color: k.color, fontSize: '22px' }}>{k.value}</div>
                                 <div className="kpi-sub">{k.sub}</div>
@@ -434,7 +434,7 @@ export default function BacktestPage() {
 
                     {/* Chart + Diagnostics */}
                     <div style={{ display: 'grid', gridTemplateColumns: '1fr 300px', gap: '14px' }}>
-                        <div className="card" style={{ padding: '24px 24px 16px' }}>
+                        <div className="glass-panel" style={{ padding: '24px 24px 16px' }}>
                             <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '18px' }}>
                                 <BarChart3 size={15} color="var(--accent-light)" />
                                 <span className="section-title">Simulated Equity Curve</span>
@@ -460,7 +460,7 @@ export default function BacktestPage() {
                             </div>
                         </div>
 
-                        <div className="card" style={{ padding: '24px' }}>
+                        <div className="glass-panel" style={{ padding: '24px' }}>
                             <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '20px' }}>
                                 <Activity size={15} color="var(--accent-light)" />
                                 <span className="section-title">Diagnostics</span>

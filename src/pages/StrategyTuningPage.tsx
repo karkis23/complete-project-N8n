@@ -13,7 +13,7 @@ import {
 import { useSettings, type Config } from '../hooks/useSettings';
 
 const TuningCard = ({ icon, title, children }: { icon: React.ReactNode; title: string; children: React.ReactNode }) => (
-    <div className="card" style={{ overflow: 'hidden' }}>
+    <div className="glass-panel" style={{ overflow: 'hidden' }}>
         <div style={{
             display: 'flex', alignItems: 'center', gap: '10px',
             padding: '18px 22px', borderBottom: '1px solid var(--border)',
@@ -40,8 +40,8 @@ const TuningSlider = ({
             <label style={{ fontSize: '11px', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.05em', color: 'var(--text-3)' }}>{label}</label>
             <span style={{
                 fontFamily: 'JetBrains Mono, monospace', fontSize: '13px', fontWeight: 700,
-                color: 'white', background: 'var(--bg-elevated)', padding: '2px 10px',
-                borderRadius: '6px', border: '1px solid var(--border)'
+                color: 'white', background: 'rgba(255, 255, 255, 0.02)', backdropFilter: 'blur(10px)', padding: '2px 10px',
+                borderRadius: '6px', border: '1px solid rgba(255,255,255,0.05)'
             }}>
                 {value}{unit}
             </span>
@@ -89,7 +89,7 @@ export default function StrategyTuningPage() {
                             style={{
                                 display: 'flex', alignItems: 'center', gap: '8px',
                                 padding: '8px 16px', borderRadius: 'var(--r-md)',
-                                border: '1px solid var(--border)', background: 'var(--bg-elevated)',
+                                border: '1px solid rgba(255,255,255,0.05)', background: 'rgba(255, 255, 255, 0.02)', backdropFilter: 'blur(10px)',
                                 color: 'var(--text-2)', fontSize: '12.5px', fontWeight: 600, cursor: 'pointer'
                             }}
                         >
@@ -132,8 +132,8 @@ export default function StrategyTuningPage() {
                                 color="var(--accent-light)"
                             />
                             <div style={{
-                                padding: '14px', background: 'var(--bg-elevated)',
-                                borderRadius: '12px', border: '1px solid var(--border)',
+                                padding: '14px', background: 'rgba(255, 255, 255, 0.02)', backdropFilter: 'blur(10px)',
+                                borderRadius: '12px', border: '1px solid rgba(255,255,255,0.05)',
                                 display: 'flex', gap: '12px', alignItems: 'flex-start'
                             }}>
                                 <Info size={14} color="var(--accent-light)" style={{ marginTop: 2, flexShrink: 0 }} />
@@ -184,7 +184,7 @@ export default function StrategyTuningPage() {
                             <div style={{
                                 display: 'flex', justifyContent: 'space-between', alignItems: 'center',
                                 padding: '16px', background: 'var(--bg-surface)',
-                                borderRadius: '12px', border: '1px solid var(--border)'
+                                borderRadius: '12px', border: '1px solid rgba(255,255,255,0.05)'
                             }}>
                                 <div>
                                     <div style={{ fontSize: '11px', fontWeight: 600, color: 'var(--text-3)', marginBottom: '2px' }}>Derived R:R Ratio</div>
@@ -210,7 +210,7 @@ export default function StrategyTuningPage() {
                                                 onClick={() => upd('minStreak', s)}
                                                 style={{
                                                     width: '32px', height: '32px', borderRadius: '8px',
-                                                    border: '1px solid var(--border)',
+                                                    border: '1px solid rgba(255,255,255,0.05)',
                                                     background: local.minStreak === s ? 'var(--accent-grad)' : 'var(--bg-elevated)',
                                                     color: local.minStreak === s ? 'white' : 'var(--text-2)',
                                                     fontSize: '12px', fontWeight: 700, cursor: 'pointer'
@@ -254,7 +254,7 @@ export default function StrategyTuningPage() {
                         position: 'fixed', bottom: 32, right: 32, zIndex: 1000,
                         display: 'flex', alignItems: 'center', gap: '12px',
                         padding: '16px 24px', borderRadius: '16px',
-                        background: 'var(--bg-elevated)', border: '1px solid var(--profit)',
+                        background: 'rgba(255, 255, 255, 0.02)', backdropFilter: 'blur(10px)', border: '1px solid var(--profit)',
                         boxShadow: '0 20px 40px rgba(0,0,0,0.5)', animation: 'slide-up 0.3s cubic-bezier(0.16, 1, 0.3, 1)'
                     }}>
                         <div style={{ width: 32, height: 32, borderRadius: '50%', background: 'var(--profit-dim)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>

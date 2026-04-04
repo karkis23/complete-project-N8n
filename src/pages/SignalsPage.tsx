@@ -101,7 +101,7 @@ export default function SignalsPage() {
                     </button>
 
                     {showDatePanel && (
-                        <div className="card slide-up" style={{
+                        <div className="glass-panel slide-up" style={{
                             position: 'absolute', top: 'calc(100% + 10px)', left: 0, zIndex: 100,
                             padding: '16px', minWidth: '240px', boxShadow: '0 10px 30px rgba(0,0,0,0.5)',
                             background: 'var(--bg-surface)', border: '1px solid var(--border-strong)'
@@ -110,12 +110,12 @@ export default function SignalsPage() {
                                 <div style={{ display: 'flex', flexDirection: 'column', gap: '5px' }}>
                                     <label style={{ fontSize: '10px', fontWeight: 700, color: 'var(--text-3)', textTransform: 'uppercase' }}>Start Date</label>
                                     <input type="date" value={dateRange.start} onChange={e => setDateRange({...dateRange, start: e.target.value})}
-                                        style={{ background: 'var(--bg-elevated)', border: '1px solid var(--border)', padding: '6px 10px', borderRadius: '6px', color: 'var(--text-1)', fontSize: '12px' }} />
+                                        style={{ background: 'rgba(255, 255, 255, 0.02)', backdropFilter: 'blur(10px)', border: '1px solid rgba(255,255,255,0.05)', padding: '6px 10px', borderRadius: '6px', color: 'var(--text-1)', fontSize: '12px' }} />
                                 </div>
                                 <div style={{ display: 'flex', flexDirection: 'column', gap: '5px' }}>
                                     <label style={{ fontSize: '10px', fontWeight: 700, color: 'var(--text-3)', textTransform: 'uppercase' }}>End Date</label>
                                     <input type="date" value={dateRange.end} onChange={e => setDateRange({...dateRange, end: e.target.value})}
-                                        style={{ background: 'var(--bg-elevated)', border: '1px solid var(--border)', padding: '6px 10px', borderRadius: '6px', color: 'var(--text-1)', fontSize: '12px' }} />
+                                        style={{ background: 'rgba(255, 255, 255, 0.02)', backdropFilter: 'blur(10px)', border: '1px solid rgba(255,255,255,0.05)', padding: '6px 10px', borderRadius: '6px', color: 'var(--text-1)', fontSize: '12px' }} />
                                 </div>
                                 <div style={{ display: 'flex', gap: '8px', marginTop: '4px' }}>
                                     <button onClick={() => setDateRange({start: '', end: ''})} style={{ flex: 1, padding: '6px', fontSize: '11px', fontWeight: 600, color: 'var(--text-3)', background: 'transparent', border: 'none', cursor: 'pointer' }}>Reset</button>
@@ -130,8 +130,8 @@ export default function SignalsPage() {
                 <div style={{
                     display: 'flex', alignItems: 'center', gap: '8px',
                     padding: '0 12px', height: '34px',
-                    border: '1px solid var(--border)', borderRadius: '99px',
-                    background: 'var(--bg-elevated)', marginLeft: 'auto'
+                    border: '1px solid rgba(255,255,255,0.05)', borderRadius: '99px',
+                    background: 'rgba(255, 255, 255, 0.02)', backdropFilter: 'blur(10px)', marginLeft: 'auto'
                 }}>
                     <Search size={13} color="var(--text-3)" />
                     <input
@@ -148,7 +148,7 @@ export default function SignalsPage() {
             </div>
 
             {/* Table */}
-            <div className="card" style={{ overflow: 'hidden' }}>
+            <div className="glass-panel" style={{ overflow: 'hidden' }}>
                 <div style={{ overflowX: 'auto', maxHeight: '600px', overflowY: 'auto' }}>
                     <table className="data-table" style={{ borderCollapse: 'separate', borderSpacing: 0 }}>
                         <thead style={{ position: 'sticky', top: 0, zIndex: 10, background: 'var(--bg-surface)' }}>
@@ -240,7 +240,7 @@ export default function SignalsPage() {
                                                             ].map(item => (
                                                                 <div key={item.label} style={{
                                                                     padding: '14px', borderRadius: 'var(--r-md)',
-                                                                    background: 'var(--bg-elevated)', border: '1px solid var(--border)'
+                                                                    background: 'rgba(255, 255, 255, 0.02)', backdropFilter: 'blur(10px)', border: '1px solid rgba(255,255,255,0.05)'
                                                                 }}>
                                                                     <div style={{ fontSize: '9px', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.08em', color: 'var(--text-3)', marginBottom: '6px' }}>{item.label}</div>
                                                                     <div style={{ fontSize: '14px', fontWeight: 700, color: 'var(--text-1)', fontFamily: 'var(--font-mono)' }}>{item.value || '—'}</div>
@@ -278,7 +278,7 @@ export default function SignalsPage() {
                                                         <div style={{ 
                                                             padding: '20px', borderRadius: 'var(--r-lg)', 
                                                             background: 'linear-gradient(90deg, var(--bg-elevated) 0%, transparent 100%)',
-                                                            border: '1px solid var(--border)',
+                                                            border: '1px solid rgba(255,255,255,0.05)',
                                                             borderLeft: '4px solid var(--accent)'
                                                         }}>
                                                             <div style={{ fontSize: '10px', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.1em', color: 'var(--accent-light)', marginBottom: '8px' }}>AI Engine Commentary</div>

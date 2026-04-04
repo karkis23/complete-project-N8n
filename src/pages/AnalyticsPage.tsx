@@ -8,7 +8,7 @@ import { useTrading } from '../hooks/useTrading';
 
 const TooltipStyle = {
     contentStyle: {
-        background: 'var(--bg-elevated)', border: '1px solid var(--border)',
+        background: 'rgba(255, 255, 255, 0.02)', backdropFilter: 'blur(10px)', border: '1px solid rgba(255,255,255,0.05)',
         borderRadius: '10px', fontSize: '12px', padding: '8px 12px'
     },
     itemStyle: { color: 'var(--text-1)', fontWeight: 600 },
@@ -100,7 +100,7 @@ export default function AnalyticsPage() {
                     { label: 'Avg Win',       value: `+₹${(stats?.avgWin ?? 0).toLocaleString('en-IN')}`,  sub: 'Per winning trade', color: 'var(--profit)',  icon: <TrendingUp size={13} color="var(--accent-light)" /> },
                     { label: 'Avg Loss',      value: `-₹${(stats?.avgLoss ?? 0).toLocaleString('en-IN')}`, sub: 'Per losing trade',  color: 'var(--loss)',    icon: <Wind size={13} color="var(--accent-light)" /> },
                 ].map(c => (
-                    <div key={c.label} className="kpi-card">
+                    <div key={c.label} className="glass-panel">
                         <div className="kpi-label">{c.icon} {c.label}</div>
                         <div className="kpi-value font-mono" style={{ color: c.color, fontSize: '24px' }}>{c.value}</div>
                         <div className="kpi-sub">{c.sub}</div>
@@ -112,7 +112,7 @@ export default function AnalyticsPage() {
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '14px' }}>
 
                 {/* Equity Curve */}
-                <div className="card" style={{ padding: '24px 24px 16px' }}>
+                <div className="glass-panel" style={{ padding: '24px 24px 16px' }}>
                     <div className="section-header" style={{ marginBottom: '18px' }}>
                         <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
                             <TrendingUp size={15} color="var(--accent-light)" />
@@ -142,7 +142,7 @@ export default function AnalyticsPage() {
                 </div>
 
                 {/* Daily P&L */}
-                <div className="card" style={{ padding: '24px 24px 16px' }}>
+                <div className="glass-panel" style={{ padding: '24px 24px 16px' }}>
                     <div className="section-header" style={{ marginBottom: '18px' }}>
                         <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
                             <Activity size={15} color="var(--accent-light)" />
@@ -173,7 +173,7 @@ export default function AnalyticsPage() {
             <div style={{ display: 'grid', gridTemplateColumns: '280px 1fr', gap: '14px' }}>
 
                 {/* Exit Distribution Pie */}
-                <div className="card" style={{ padding: '24px' }}>
+                <div className="glass-panel" style={{ padding: '24px' }}>
                     <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '18px' }}>
                         <PieIcon size={15} color="var(--accent-light)" />
                         <span className="section-title">Exit Breakdown</span>
@@ -187,7 +187,7 @@ export default function AnalyticsPage() {
                                             paddingAngle={6} dataKey="value">
                                             {pieData.map((d, i) => <Cell key={i} fill={d.color} opacity={0.85} stroke="none" />)}
                                         </Pie>
-                                        <Tooltip contentStyle={{ background: 'var(--bg-elevated)', border: '1px solid var(--border)', borderRadius: '10px', fontSize: '12px' }} />
+                                        <Tooltip contentStyle={{ background: 'rgba(255, 255, 255, 0.02)', backdropFilter: 'blur(10px)', border: '1px solid rgba(255,255,255,0.05)', borderRadius: '10px', fontSize: '12px' }} />
                                     </PieChart>
                                 </ResponsiveContainer>
                             </div>
@@ -209,7 +209,7 @@ export default function AnalyticsPage() {
                 </div>
 
                 {/* VIX Performance */}
-                <div className="card" style={{ overflow: 'hidden' }}>
+                <div className="glass-panel" style={{ overflow: 'hidden' }}>
                     <div style={{ padding: '20px 24px', borderBottom: '1px solid var(--border)', display: 'flex', alignItems: 'center', gap: '8px' }}>
                         <Wind size={15} color="var(--accent-light)" />
                         <span className="section-title">Performance by Volatility (VIX)</span>
