@@ -13,7 +13,7 @@ import { useTrading } from '../hooks/useTrading';
 
 const TooltipStyle = {
     contentStyle: {
-        background: 'var(--bg-elevated)', border: '1px solid var(--border)',
+        background: 'rgba(255, 255, 255, 0.02)', backdropFilter: 'blur(10px)', border: '1px solid rgba(255,255,255,0.05)',
         borderRadius: '10px', fontSize: '12px', padding: '8px 12px'
     },
     itemStyle: { color: 'var(--text-1)', fontWeight: 600 },
@@ -210,7 +210,7 @@ export default function ValidationPage() {
                         style={{
                             display: 'flex', alignItems: 'center', gap: '7px',
                             padding: '7px 16px', borderRadius: 'var(--r-md)',
-                            border: '1px solid var(--border)', background: 'var(--bg-elevated)',
+                            border: '1px solid rgba(255,255,255,0.05)', background: 'rgba(255, 255, 255, 0.02)', backdropFilter: 'blur(10px)',
                             color: 'var(--text-2)', fontSize: '12.5px', fontWeight: 600,
                             cursor: 'pointer', transition: 'var(--trans-s)'
                         }}
@@ -263,7 +263,7 @@ export default function ValidationPage() {
                     </button>
 
                     {showDatePanel && (
-                        <div className="card slide-up" style={{
+                        <div className="glass-panel slide-up" style={{
                             position: 'absolute', top: 'calc(100% + 10px)', left: 0, zIndex: 100,
                             padding: '16px', minWidth: '240px', boxShadow: '0 10px 30px rgba(0,0,0,0.5)',
                             background: 'var(--bg-surface)', border: '1px solid var(--border-strong)'
@@ -272,12 +272,12 @@ export default function ValidationPage() {
                                 <div style={{ display: 'flex', flexDirection: 'column', gap: '5px' }}>
                                     <label style={{ fontSize: '10px', fontWeight: 700, color: 'var(--text-3)', textTransform: 'uppercase' }}>Start Date</label>
                                     <input type="date" value={dateRange.start} onChange={e => setDateRange({...dateRange, start: e.target.value})}
-                                        style={{ background: 'var(--bg-elevated)', border: '1px solid var(--border)', padding: '6px 10px', borderRadius: '6px', color: 'var(--text-1)', fontSize: '12px' }} />
+                                        style={{ background: 'rgba(255, 255, 255, 0.02)', backdropFilter: 'blur(10px)', border: '1px solid rgba(255,255,255,0.05)', padding: '6px 10px', borderRadius: '6px', color: 'var(--text-1)', fontSize: '12px' }} />
                                 </div>
                                 <div style={{ display: 'flex', flexDirection: 'column', gap: '5px' }}>
                                     <label style={{ fontSize: '10px', fontWeight: 700, color: 'var(--text-3)', textTransform: 'uppercase' }}>End Date</label>
                                     <input type="date" value={dateRange.end} onChange={e => setDateRange({...dateRange, end: e.target.value})}
-                                        style={{ background: 'var(--bg-elevated)', border: '1px solid var(--border)', padding: '6px 10px', borderRadius: '6px', color: 'var(--text-1)', fontSize: '12px' }} />
+                                        style={{ background: 'rgba(255, 255, 255, 0.02)', backdropFilter: 'blur(10px)', border: '1px solid rgba(255,255,255,0.05)', padding: '6px 10px', borderRadius: '6px', color: 'var(--text-1)', fontSize: '12px' }} />
                                 </div>
                                 <div style={{ display: 'flex', gap: '8px', marginTop: '4px' }}>
                                     <button onClick={() => setDateRange({start: '', end: ''})} style={{ flex: 1, padding: '6px', fontSize: '11px', fontWeight: 600, color: 'var(--text-3)', background: 'transparent', border: 'none', cursor: 'pointer' }}>Reset</button>
@@ -292,8 +292,8 @@ export default function ValidationPage() {
                 <div style={{
                     display: 'flex', alignItems: 'center', gap: '8px',
                     padding: '0 12px', height: '34px',
-                    border: '1px solid var(--border)', borderRadius: '99px',
-                    background: 'var(--bg-elevated)', marginLeft: 'auto'
+                    border: '1px solid rgba(255,255,255,0.05)', borderRadius: '99px',
+                    background: 'rgba(255, 255, 255, 0.02)', backdropFilter: 'blur(10px)', marginLeft: 'auto'
                 }}>
                     <Activity size={13} color="var(--text-3)" />
                     <input
@@ -311,28 +311,28 @@ export default function ValidationPage() {
 
             {/* KPIs */}
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4,1fr)', gap: '14px' }}>
-                <div className="kpi-card">
+                <div className="glass-panel">
                     <div className="kpi-label"><ShieldCheck size={13} color="var(--accent-light)" /> Accuracy</div>
                     <div className="kpi-value" style={{ color: accuracy > 60 ? 'var(--profit)' : 'var(--accent-light)' }}>
                         {accuracy.toFixed(1)}%
                     </div>
                     <div className="kpi-sub">{correct} of {tradeable} correct</div>
                 </div>
-                <div className="kpi-card">
+                <div className="glass-panel">
                     <div className="kpi-label"><Globe size={13} color="var(--accent-light)" /> Live Nifty</div>
                     <div className="kpi-value font-mono" style={{ fontSize: '22px' }}>
                         {marketData?.niftyLTP?.toLocaleString('en-IN') ?? '—'}
                     </div>
                     <div className="kpi-sub">Reference price</div>
                 </div>
-                <div className="kpi-card">
+                <div className="glass-panel">
                     <div className="kpi-label"><Activity size={13} color="var(--accent-light)" /> VIX</div>
                     <div className="kpi-value" style={{ color: (marketData?.vix ?? 0) > 18 ? 'var(--loss)' : 'var(--profit)' }}>
                         {marketData?.vix?.toFixed(2) ?? '—'}
                     </div>
                     <div className="kpi-sub">Risk: {(marketData?.vix ?? 0) > 18 ? 'Elevated' : 'Normal'}</div>
                 </div>
-                <div className="kpi-card">
+                <div className="glass-panel">
                     <div className="kpi-label"><Cpu size={13} color="var(--accent-light)" /> Sample Size</div>
                     <div className="kpi-value font-mono">{filtered.length}</div>
                     <div className="kpi-sub">{filtered.filter(a => a.priceSource === 'LOCKED').length} locked · {filtered.filter(a => a.priceSource === 'PENDING').length} pending</div>
@@ -340,7 +340,7 @@ export default function ValidationPage() {
             </div>
 
             {/* Audit Table */}
-            <div className="card" style={{ overflow: 'hidden' }}>
+            <div className="glass-panel" style={{ overflow: 'hidden' }}>
                 <div style={{
                     padding: '16px 20px', borderBottom: '1px solid var(--border)',
                     display: 'flex', alignItems: 'center', justifyContent: 'space-between'
@@ -447,8 +447,8 @@ export default function ValidationPage() {
                                                             { label: 'Audit Price Move', value: `${a.diff > 0 ? '+' : ''}${a.diff.toFixed(1)} (${a.pct.toFixed(2)}%)`, color: a.diff > 0 ? 'var(--profit)' : a.diff < 0 ? 'var(--loss)' : 'var(--text-1)' }
                                                         ].map(item => (
                                                             <div key={item.label} style={{
-                                                                padding: '12px 14px', background: 'var(--bg-elevated)',
-                                                                borderRadius: 8, border: '1px solid var(--border)'
+                                                                padding: '12px 14px', background: 'rgba(255, 255, 255, 0.02)', backdropFilter: 'blur(10px)',
+                                                                borderRadius: 8, border: '1px solid rgba(255,255,255,0.05)'
                                                             }}>
                                                                 <div style={{ fontSize: '9.5px', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.08em', color: 'var(--text-3)', marginBottom: '4px' }}>{item.label}</div>
                                                                 <div className="font-mono" style={{ fontSize: '14px', fontWeight: 700, color: item.color || 'var(--text-1)' }}>{item.value ?? '—'}</div>
@@ -492,7 +492,7 @@ export default function ValidationPage() {
             {/* Analytics Row */}
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '14px' }}>
                 {/* Regime table */}
-                <div className="card" style={{ overflow: 'hidden' }}>
+                <div className="glass-panel" style={{ overflow: 'hidden' }}>
                     <div style={{ padding: '16px 20px', borderBottom: '1px solid var(--border)' }}>
                         <span className="section-title">Accuracy by Market Regime</span>
                     </div>
@@ -527,7 +527,7 @@ export default function ValidationPage() {
                 </div>
 
                 {/* Hourly chart */}
-                <div className="card" style={{ padding: '20px 20px 16px' }}>
+                <div className="glass-panel" style={{ padding: '20px 20px 16px' }}>
                     <div className="section-header" style={{ marginBottom: '16px' }}>
                         <span className="section-title">Hourly Accuracy</span>
                     </div>

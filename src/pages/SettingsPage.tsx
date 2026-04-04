@@ -10,7 +10,7 @@ const SHEET_ID = '1aTMH5Yz28X_NA6lZgtjQzc7jlu9hiAPVVuf1ASTBQoU';
 const SectionCard = ({ icon, title, badge, children }: {
     icon: React.ReactNode; title: string; badge?: React.ReactNode; children: React.ReactNode;
 }) => (
-    <div className="card" style={{ overflow: 'hidden' }}>
+    <div className="glass-panel" style={{ overflow: 'hidden' }}>
         <div style={{
             display: 'flex', alignItems: 'center', justifyContent: 'space-between',
             padding: '18px 22px', borderBottom: '1px solid var(--border)'
@@ -43,8 +43,8 @@ const SettingRow = ({ label, desc, children }: { label: string; desc?: string; c
 const SettingInput = (props: React.InputHTMLAttributes<HTMLInputElement>) => (
     <input {...props} style={{
         width: '88px', height: '34px', padding: '0 10px',
-        borderRadius: 'var(--r-md)', border: '1px solid var(--border)',
-        background: 'var(--bg-elevated)', color: 'var(--text-1)',
+        borderRadius: 'var(--r-md)', border: '1px solid rgba(255,255,255,0.05)',
+        background: 'rgba(255, 255, 255, 0.02)', backdropFilter: 'blur(10px)', color: 'var(--text-1)',
         fontSize: '13px', fontFamily: 'JetBrains Mono, monospace',
         outline: 'none', textAlign: 'right', transition: 'var(--trans-s)'
     }} />
@@ -110,7 +110,7 @@ export default function SettingsPage() {
                     position: 'fixed', top: 80, right: 24, zIndex: 9999,
                     display: 'flex', alignItems: 'center', gap: '10px',
                     padding: '12px 18px', borderRadius: 'var(--r-lg)',
-                    background: 'var(--bg-elevated)', border: '1px solid var(--profit)',
+                    background: 'rgba(255, 255, 255, 0.02)', backdropFilter: 'blur(10px)', border: '1px solid var(--profit)',
                     boxShadow: '0 8px 32px rgba(0,0,0,0.4)', animation: 'enter 0.2s ease'
                 }}>
                     <CheckCircle2 size={16} color="var(--profit)" />
@@ -154,7 +154,7 @@ export default function SettingsPage() {
                         <div style={{
                             display: 'flex', justifyContent: 'space-between', alignItems: 'center',
                             padding: '12px 14px', marginTop: '4px', borderRadius: 'var(--r-md)',
-                            background: 'var(--bg-elevated)', border: '1px solid var(--border)'
+                            background: 'rgba(255, 255, 255, 0.02)', backdropFilter: 'blur(10px)', border: '1px solid rgba(255,255,255,0.05)'
                         }}>
                             <div>
                                 <div style={{ fontSize: '11px', fontWeight: 600, color: 'var(--text-3)', marginBottom: '2px' }}>Calculated R:R Ratio</div>
@@ -213,7 +213,7 @@ export default function SettingsPage() {
                     {/* Data Sources */}
                     <SectionCard icon={<Database size={15} />} title="Data Sources">
                         {/* Sheet ID */}
-                        <div style={{ padding: '14px', marginBottom: '14px', background: 'var(--bg-elevated)', borderRadius: 'var(--r-md)', border: '1px solid var(--border)' }}>
+                        <div style={{ padding: '14px', marginBottom: '14px', background: 'rgba(255, 255, 255, 0.02)', backdropFilter: 'blur(10px)', borderRadius: 'var(--r-md)', border: '1px solid rgba(255,255,255,0.05)' }}>
                             <div style={{ fontSize: '11px', fontWeight: 600, color: 'var(--text-3)', marginBottom: '6px', textTransform: 'uppercase', letterSpacing: '0.06em' }}>Database Sheet ID</div>
                             <code style={{ display: 'block', fontFamily: 'JetBrains Mono, monospace', fontSize: '12px', color: 'var(--accent-light)', wordBreak: 'break-all', marginBottom: '10px' }}>{SHEET_ID}</code>
                             <a href={`https://docs.google.com/spreadsheets/d/${SHEET_ID}`} target="_blank" rel="noreferrer"
@@ -258,7 +258,7 @@ export default function SettingsPage() {
                                 <a key={l.url} href={l.url} target="_blank" rel="noreferrer" style={{
                                     display: 'flex', alignItems: 'center', justifyContent: 'space-between',
                                     padding: '11px 14px', borderRadius: 'var(--r-md)',
-                                    border: '1px solid var(--border)', background: 'var(--bg-elevated)',
+                                    border: '1px solid rgba(255,255,255,0.05)', background: 'rgba(255, 255, 255, 0.02)', backdropFilter: 'blur(10px)',
                                     textDecoration: 'none', color: 'var(--text-2)',
                                     fontSize: '12.5px', fontWeight: 600, transition: 'var(--trans-s)'
                                 }}>
@@ -269,7 +269,7 @@ export default function SettingsPage() {
                     </SectionCard>
 
                     {/* Schedule info for session */}
-                    <div style={{ padding: '16px 18px', borderRadius: 'var(--r-lg)', background: 'var(--bg-elevated)', border: '1px solid var(--border)' }}>
+                    <div style={{ padding: '16px 18px', borderRadius: 'var(--r-lg)', background: 'rgba(255, 255, 255, 0.02)', backdropFilter: 'blur(10px)', border: '1px solid rgba(255,255,255,0.05)' }}>
                         <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '10px' }}>
                             <Clock size={14} color="var(--accent-light)" />
                             <span style={{ fontSize: '12px', fontWeight: 600, color: 'var(--text-2)' }}>System Schedule</span>
@@ -292,7 +292,7 @@ export default function SettingsPage() {
             <div style={{
                 display: 'flex', alignItems: 'center', justifyContent: 'space-between',
                 padding: '16px 22px', borderRadius: 'var(--r-xl)',
-                background: 'var(--bg-elevated)', border: '1px solid var(--border)'
+                background: 'rgba(255, 255, 255, 0.02)', backdropFilter: 'blur(10px)', border: '1px solid rgba(255,255,255,0.05)'
             }}>
                 <span style={{ fontSize: '12px', color: 'var(--text-3)' }}>
                     Settings saved locally. Use "Sync" to export values to n8n.
@@ -301,7 +301,7 @@ export default function SettingsPage() {
                     <button onClick={copyJson} style={{
                         display: 'flex', alignItems: 'center', gap: '7px',
                         padding: '8px 18px', borderRadius: 'var(--r-md)',
-                        border: '1px solid var(--border)', background: 'var(--bg-subtle)',
+                        border: '1px solid rgba(255,255,255,0.05)', background: 'var(--bg-subtle)',
                         color: 'var(--text-2)', fontSize: '13px', fontWeight: 600, cursor: 'pointer', transition: 'var(--trans-s)'
                     }}>
                         <FileJson size={14} /> Sync Export

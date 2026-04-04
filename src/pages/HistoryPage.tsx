@@ -80,7 +80,7 @@ export default function HistoryPage() {
                 <button onClick={handleExport} style={{
                     display: 'flex', alignItems: 'center', gap: '7px',
                     padding: '7px 16px', borderRadius: 'var(--r-md)',
-                    border: '1px solid var(--border)', background: 'var(--bg-elevated)',
+                    border: '1px solid rgba(255,255,255,0.05)', background: 'rgba(255, 255, 255, 0.02)', backdropFilter: 'blur(10px)',
                     color: 'var(--text-2)', fontSize: '12.5px', fontWeight: 600, cursor: 'pointer'
                 }}>
                     <Download size={13} /> Export
@@ -89,26 +89,26 @@ export default function HistoryPage() {
 
             {/* KPIs */}
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4,1fr)', gap: '14px' }}>
-                <div className="kpi-card">
+                <div className="glass-panel">
                     <div className="kpi-label">Total P&L</div>
                     <div className="kpi-value" style={{ color: (stats?.totalPnL ?? 0) >= 0 ? 'var(--profit)' : 'var(--loss)' }}>
                         {fmtShort(stats?.totalPnL ?? 0)}
                     </div>
                     <div className="kpi-sub">{stats?.totalTrades ?? 0} trades logged</div>
                 </div>
-                <div className="kpi-card">
+                <div className="glass-panel">
                     <div className="kpi-label">Win Rate</div>
                     <div className="kpi-value" style={{ color: 'var(--profit)' }}>{stats?.winRate ?? 0}%</div>
                     <div className="kpi-sub">{winCount} wins · {lossCount} losses</div>
                 </div>
-                <div className="kpi-card">
+                <div className="glass-panel">
                     <div className="kpi-label">Average Win</div>
                     <div className="kpi-value font-mono" style={{ color: 'var(--profit)' }}>
                         +₹{(stats?.avgWin ?? 0).toLocaleString('en-IN')}
                     </div>
                     <div className="kpi-sub">Per winning trade</div>
                 </div>
-                <div className="kpi-card">
+                <div className="glass-panel">
                     <div className="kpi-label">Average Loss</div>
                     <div className="kpi-value font-mono" style={{ color: 'var(--loss)' }}>
                         -₹{(stats?.avgLoss ?? 0).toLocaleString('en-IN')}
@@ -135,8 +135,8 @@ export default function HistoryPage() {
                 <div style={{
                     display: 'flex', alignItems: 'center', gap: '8px',
                     padding: '0 12px', height: '34px', marginLeft: 'auto',
-                    border: '1px solid var(--border)', borderRadius: '99px',
-                    background: 'var(--bg-elevated)'
+                    border: '1px solid rgba(255,255,255,0.05)', borderRadius: '99px',
+                    background: 'rgba(255, 255, 255, 0.02)', backdropFilter: 'blur(10px)'
                 }}>
                     <Search size={13} color="var(--text-3)" />
                     <input
@@ -153,7 +153,7 @@ export default function HistoryPage() {
             </div>
 
             {/* Table */}
-            <div className="card" style={{ overflow: 'hidden' }}>
+            <div className="glass-panel" style={{ overflow: 'hidden' }}>
                 <div style={{ overflowX: 'auto' }}>
                     <table className="data-table">
                         <thead>

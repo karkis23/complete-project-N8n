@@ -23,7 +23,7 @@ const fmtShort = (v: number) => {
 
 const TooltipStyle = {
     contentStyle: {
-        background: 'var(--bg-elevated)', border: '1px solid var(--border)',
+        background: 'rgba(255, 255, 255, 0.02)', backdropFilter: 'blur(10px)', border: '1px solid rgba(255,255,255,0.05)',
         borderRadius: '10px', fontSize: '12px', padding: '8px 12px'
     },
     itemStyle: { color: 'var(--text-1)', fontWeight: 600 },
@@ -49,7 +49,7 @@ const WidgetWrapper = ({
     rowSpan: number;
     noScroll?: boolean;
 }) => (
-    <div className="card fade-in" style={{ 
+    <div className="glass-panel fade-in" style={{ 
         gridColumn: `span ${colSpan}`, 
         gridRow: `span ${rowSpan}`,
         display: 'flex', 
@@ -233,7 +233,7 @@ export default function WorkspacePage() {
                              <div style={{ fontSize: '10px', color: 'var(--text-4)', textTransform: 'uppercase', fontWeight: 700 }}>
                                  {(latest?.vix || 0) > 20 ? 'High Volatility' : (latest?.vix || 0) > 15 ? 'Moderate Vol' : 'Low Vol'}
                              </div>
-                             <div style={{ width: '100%', height: '4px', background: 'var(--bg-elevated)', borderRadius: '2px', marginTop: '4px', overflow: 'hidden' }}>
+                             <div style={{ width: '100%', height: '4px', background: 'rgba(255, 255, 255, 0.02)', backdropFilter: 'blur(10px)', borderRadius: '2px', marginTop: '4px', overflow: 'hidden' }}>
                                  <div style={{ 
                                      width: `${Math.min((latest?.vix || 0) * 2.5, 100)}%`, 
                                      height: '100%', 
@@ -249,14 +249,14 @@ export default function WorkspacePage() {
                     <WidgetWrapper title="Market Regime" icon={Globe} onRemove={onRemove} colSpan={widget.colSpan} rowSpan={widget.rowSpan}>
                         <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
                             <div style={{ 
-                                padding: '8px 12px', background: 'var(--bg-elevated)', borderRadius: '10px', border: '1px solid var(--border)',
+                                padding: '8px 12px', background: 'rgba(255, 255, 255, 0.02)', backdropFilter: 'blur(10px)', borderRadius: '10px', border: '1px solid rgba(255,255,255,0.05)',
                                 display: 'flex', justifyContent: 'space-between', alignItems: 'center'
                             }}>
                                 <span style={{ fontSize: '11px', color: 'var(--text-3)' }}>Trend</span>
                                 <span style={{ fontSize: '12px', fontWeight: 700, color: 'var(--text-1)' }}>{(latest?.adx || 0) > 25 ? 'TRENDING' : 'RANGING'}</span>
                             </div>
                             <div style={{ 
-                                padding: '8px 12px', background: 'var(--bg-elevated)', borderRadius: '10px', border: '1px solid var(--border)',
+                                padding: '8px 12px', background: 'rgba(255, 255, 255, 0.02)', backdropFilter: 'blur(10px)', borderRadius: '10px', border: '1px solid rgba(255,255,255,0.05)',
                                 display: 'flex', justifyContent: 'space-between', alignItems: 'center'
                             }}>
                                 <span style={{ fontSize: '11px', color: 'var(--text-3)' }}>Context</span>
@@ -333,7 +333,7 @@ export default function WorkspacePage() {
                                 { l: 'PCR', v: latest?.putCallRatio?.toFixed(2) || 0 },
                                 { l: 'GEX', v: (latest?.gammaExposure || 0).toFixed(2) }
                             ].map(m => (
-                                <div key={m.l} style={{ padding: '8px', background: 'var(--bg-elevated)', borderRadius: '8px', border: '1px solid var(--border)' }}>
+                                <div key={m.l} style={{ padding: '8px', background: 'rgba(255, 255, 255, 0.02)', backdropFilter: 'blur(10px)', borderRadius: '8px', border: '1px solid rgba(255,255,255,0.05)' }}>
                                     <div style={{ fontSize: '9px', color: 'var(--text-4)', fontWeight: 700 }}>{m.l}</div>
                                     <div style={{ fontSize: '11px', fontWeight: 600, color: 'var(--text-2)' }}>{m.v}</div>
                                 </div>
@@ -357,7 +357,7 @@ export default function WorkspacePage() {
                         ) : (
                             <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
                                 {activeTrades.map(t => (
-                                    <div key={t.entryOrderId} style={{ display: 'flex', justifyContent: 'space-between', padding: '8px', background: 'var(--bg-elevated)', borderRadius: '8px' }}>
+                                    <div key={t.entryOrderId} style={{ display: 'flex', justifyContent: 'space-between', padding: '8px', background: 'rgba(255, 255, 255, 0.02)', backdropFilter: 'blur(10px)', borderRadius: '8px' }}>
                                         <div style={{ fontSize: '11px', fontWeight: 600 }}>{t.tradingSymbol}</div>
                                         <div style={{ fontSize: '11px', fontWeight: 700, color: (t.pnl || 0) >= 0 ? 'var(--profit)' : 'var(--loss)' }}>{fmtShort(t.pnl || 0)}</div>
                                     </div>
@@ -375,11 +375,11 @@ export default function WorkspacePage() {
                                 <span style={{ fontSize: '13px', fontWeight: 700 }}>{engineHealth?.status?.toUpperCase() || 'OFFLINE'}</span>
                             </div>
                             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '8px' }}>
-                                <div style={{ fontSize: '10px', background: 'var(--bg-elevated)', padding: '6px', borderRadius: '6px', textAlign: 'center' }}>
+                                <div style={{ fontSize: '10px', background: 'rgba(255, 255, 255, 0.02)', backdropFilter: 'blur(10px)', padding: '6px', borderRadius: '6px', textAlign: 'center' }}>
                                     <div style={{ color: 'var(--text-4)' }}>STATUS</div>
                                     <div style={{ fontWeight: 600 }}>LIVE</div>
                                 </div>
-                                <div style={{ fontSize: '10px', background: 'var(--bg-elevated)', padding: '6px', borderRadius: '6px', textAlign: 'center' }}>
+                                <div style={{ fontSize: '10px', background: 'rgba(255, 255, 255, 0.02)', backdropFilter: 'blur(10px)', padding: '6px', borderRadius: '6px', textAlign: 'center' }}>
                                     <div style={{ color: 'var(--text-4)' }}>UPTIME</div>
                                     <div style={{ fontWeight: 600 }}>99.9%</div>
                                 </div>
@@ -464,14 +464,14 @@ export default function WorkspacePage() {
 
                 {/* Widget Picker Overlay */}
                 {showWidgetPicker && (
-                    <div className="card fade-in" style={{ padding: '16px', background: 'var(--bg-elevated)', border: '1px solid var(--border-strong)', display: 'grid', gridTemplateColumns: 'repeat(5, 1fr)', gap: '8px', zIndex: 100 }}>
+                    <div className="glass-panel fade-in" style={{ padding: '16px', background: 'rgba(255, 255, 255, 0.02)', backdropFilter: 'blur(10px)', border: '1px solid var(--border-strong)', display: 'grid', gridTemplateColumns: 'repeat(5, 1fr)', gap: '8px', zIndex: 100 }}>
                         {WIDGET_OPTIONS.map(opt => (
                             <button 
                                 key={opt.type}
                                 onClick={() => { addWidget(activeId, opt.type); setShowWidgetPicker(false); }}
                                 style={{ 
                                     display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '8px', 
-                                    padding: '12px', background: 'var(--bg-surface)', border: '1px solid var(--border)', 
+                                    padding: '12px', background: 'var(--bg-surface)', border: '1px solid rgba(255,255,255,0.05)', 
                                     borderRadius: '10px', color: 'var(--text-2)', cursor: 'pointer'
                                 }}
                                 className="icon-btn-hover"
@@ -485,7 +485,7 @@ export default function WorkspacePage() {
 
                 {/* Edit Mode Controls */}
                 {isEditMode && (
-                    <div className="card-sm slide-up" style={{ padding: '12px 20px', background: 'rgba(99,102,241,0.05)', borderColor: 'var(--accent-dim)', display: 'flex', alignItems: 'center', gap: '20px' }}>
+                    <div className="glass-panel-sm slide-up" style={{ padding: '12px 20px', background: 'rgba(99,102,241,0.05)', borderColor: 'var(--accent-dim)', display: 'flex', alignItems: 'center', gap: '20px' }}>
                          <div style={{ fontSize: '12px', fontWeight: 700, color: 'var(--accent-light)' }}>WORKSPACE SETTINGS</div>
                          <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
                              <span style={{ fontSize: '11px', color: 'var(--text-3)' }}>Columns:</span>
@@ -494,7 +494,7 @@ export default function WorkspacePage() {
                                     key={c}
                                     onClick={() => updateLayout(activeId, { columns: c })}
                                     style={{ 
-                                        width: '28px', height: '28px', borderRadius: '6px', border: '1px solid var(--border)',
+                                        width: '28px', height: '28px', borderRadius: '6px', border: '1px solid rgba(255,255,255,0.05)',
                                         background: activeLayout.columns === c ? 'var(--accent)' : 'transparent',
                                         color: activeLayout.columns === c ? '#fff' : 'var(--text-3)',
                                         fontSize: '11px', fontWeight: 700, cursor: 'pointer'

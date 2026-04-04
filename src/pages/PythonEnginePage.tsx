@@ -95,26 +95,26 @@ export default function PythonEnginePage() {
 
                 {/* KPI Overview */}
                 <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '20px' }}>
-                    <div className="kpi-card">
+                    <div className="glass-panel">
                         <div className="kpi-label"><Activity size={12} /> API Status</div>
                         <div className="kpi-value" style={{ color: error ? 'var(--loss)' : 'var(--profit)' }}>
                             {error ? 'OFFLINE' : 'HEALTHY'}
                         </div>
                         <div className="kpi-sub">{error ? 'localhost:8000 unreachable' : `Running v${health?.version || '4.0.0'}`}</div>
                     </div>
-                    <div className="kpi-card">
+                    <div className="glass-panel">
                         <div className="kpi-label"><Zap size={12} /> Engine Mode</div>
                         <div className="kpi-value" style={{ fontSize: '20px', color: modelStatus?.model_loaded ? 'var(--accent-light)' : 'var(--warn)' }}>
                             {modelStatus?.mode?.replace('_', ' ') || 'RULES FALLBACK'}
                         </div>
                         <div className="kpi-sub">{modelStatus?.model_loaded ? `${modelStatus.feature_count} active features` : 'No AI model loaded'}</div>
                     </div>
-                    <div className="kpi-card">
+                    <div className="glass-panel">
                         <div className="kpi-label"><Cpu size={12} /> Processing</div>
                         <div className="kpi-value">FastAPI</div>
                         <div className="kpi-sub">Uvicorn ASGI worker active</div>
                     </div>
-                    <div className="kpi-card">
+                    <div className="glass-panel">
                         <div className="kpi-label"><Database size={12} /> Model Store</div>
                         <div className="kpi-value">{modelStatus?.model_loaded ? 'Ready' : 'Standby'}</div>
                         <div className="kpi-sub">Managed via /api/models</div>
@@ -139,7 +139,7 @@ export default function PythonEnginePage() {
                                     href={link.url}
                                     target="_blank"
                                     rel="noreferrer"
-                                    className="card"
+                                    className="glass-panel"
                                     style={{
                                         padding: '20px',
                                         display: 'flex',
@@ -152,9 +152,9 @@ export default function PythonEnginePage() {
                                 >
                                     <div style={{
                                         width: '44px', height: '44px', borderRadius: '12px',
-                                        background: 'var(--bg-elevated)', display: 'flex',
+                                        background: 'rgba(255, 255, 255, 0.02)', backdropFilter: 'blur(10px)', display: 'flex',
                                         alignItems: 'center', justifyContent: 'center',
-                                        border: '1px solid var(--border)'
+                                        border: '1px solid rgba(255,255,255,0.05)'
                                     }}>
                                         <link.icon size={22} color={link.color} />
                                     </div>
@@ -172,7 +172,7 @@ export default function PythonEnginePage() {
 
                     {/* Operational Docs */}
                     <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
-                        <div className="card" style={{ padding: '24px', display: 'flex', flexDirection: 'column', gap: '24px' }}>
+                        <div className="glass-panel" style={{ padding: '24px', display: 'flex', flexDirection: 'column', gap: '24px' }}>
                             <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
                                 <div style={{ padding: '8px', background: 'var(--accent-dim)', borderRadius: '8px' }}>
                                     <BookOpen size={16} color="var(--accent-light)" />
@@ -208,7 +208,7 @@ export default function PythonEnginePage() {
                         </div>
 
                         {/* Quick Tip */}
-                        <div className="card" style={{ padding: '16px 20px', background: 'var(--bg-elevated)', display: 'flex', alignItems: 'center', gap: '12px' }}>
+                        <div className="glass-panel" style={{ padding: '16px 20px', background: 'rgba(255, 255, 255, 0.02)', backdropFilter: 'blur(10px)', display: 'flex', alignItems: 'center', gap: '12px' }}>
                             <div style={{ color: 'var(--warn)' }}><Zap size={16} /></div>
                             <span style={{ fontSize: '11px', color: 'var(--text-2)', fontWeight: 500 }}>
                                 <b>Tip:</b> If the Engine Mode shows "RULES FALLBACK", ensure you have trained the AI model using the command-line scripts.
