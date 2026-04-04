@@ -368,14 +368,21 @@ body {
 .icon-btn:disabled { opacity: 0.4; cursor: not-allowed; }
 
 /* ─── CARDS ─────────────────────────────────────────────────────────── */
-.card {
+.card, .glass-panel {
   background: var(--bg-surface);
   border: 1px solid var(--border);
   border-radius: var(--r-xl);
   transition: var(--trans);
 }
 
-.card:hover { border-color: var(--border-strong); }
+.card:hover, .glass-panel:hover { border-color: var(--border-strong); }
+
+.glass-panel:has(.kpi-value) {
+  padding: 22px 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
 
 .card-sm {
   background: var(--bg-surface);
@@ -778,4 +785,14 @@ body {
   .page-body { padding: 20px 16px 40px; gap: 20px; }
   .header { padding: 0 16px; }
   .kpi-value { font-size: 22px; }
+}
+
+/* ─── TERMINAL CURSOR ───────────────────────────────────────────────── */
+@keyframes cursorBlink {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0; }
+}
+
+.cursor-blink {
+  animation: cursorBlink 1s step-end infinite;
 }
