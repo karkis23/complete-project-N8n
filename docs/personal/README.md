@@ -21,6 +21,8 @@ This folder contains personal notes documenting every important topic, discussio
 | `10_IDE_ERRORS_EXPLAINED.md` | Why the VS Code import and round() errors are false positives |
 | `11_HARDWARE_AND_SYSTEM_REQUIREMENTS.md` | Full hardware analysis — Acer Aspire A715-79G assessment |
 | `12_COMPLETE_PROJECT_ANALYSIS.md` | Deep analysis of the entire project — scores, findings, final verdict |
+| `20_PERSISTENCE_PLAYBOOK.md` | Strategic analysis and persistence guide (v4.3) |
+| `22_AI_MODEL_OUTPUT_FIELDS.md` | **Explanation of database field consistency after AI training** |
 | `MY_PROJECT_NOTE.md` | The complete project explanation (personal summary) |
 
 ---
