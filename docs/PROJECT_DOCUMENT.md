@@ -1,7 +1,7 @@
 # 📊 ZENITH: Complete System Technical Documentation
 
-> **Version:** 4.3.2 (Advanced Data Scaling & High-Performance UI)
-> **Last Updated:** 30 March 2026
+> **Version:** 4.3.5 (Normalized Signal Labels & 1k Telemetry Milestone)
+> **Last Updated:** 17 April 2026
 > **Aesthetic:** ZENITH Professional Midnight
 > **Core Guide:** [ZENITH_SYSTEM_HANDBOOK.md](./ZENITH_SYSTEM_HANDBOOK.md)
 > **Architecture Diagrams:** [diagram.md](./diagram.md)
@@ -798,6 +798,13 @@ Verified Status = TRUE                                          Verified Status 
 
 ### Bug #12 — Writers Floor Exclusion
 - **Problem:** Confidence `0.3` was excluded by a strict `> 0.3` check.
+- **Fix:** Changed to `>= 0.3`.
+
+### Bug #13 — Signal Label Mismatch (v4.3.5 Fix)
+- **Problem:** Signals were logged as `BUY CALL (CE)` and `BUY PUT (PE)`, while the Oracle labeler and ML Export View expected `BUY CE` and `BUY PE`.
+- **Fix:** Normalized naming convention across `rule_engine.py`, `signal_engine.py`, and `models.py`.
+- **Date:** 17 April 2026
+- **Status:** ✅ FIXED. All future logs will use the streamlined `BUY CE` / `BUY PE` format.
 - **Fix:** Changed to `>= 0.3` and updated diagnostic messages to show actual confidence.
 - **Date:** 02 March 2026
 
