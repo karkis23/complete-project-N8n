@@ -91,5 +91,11 @@ A hybrid institutional-grade trading system. We have transitioned from **n8n-hos
 | Feature Count | `57` | Total unique numbers fed to the AI model. |
 | GEX Flip | `Strike` | Level where market maker positioning flips. |
 
+## 7. Version History & Milestones
+- **v4.0.0 (09 Mar 24):** FastAPI Migration complete.
+- **v4.3.0 (24 Mar 24):** 64-column Telemetry added.
+- **v4.3.5 (17 Apr 26):** **Signal Normalization Fixed.** All signals now log as `BUY CE` / `BUY PE`.
+- **MILESTONE (16 Apr 26):** **1,000-Row Limit Passed.** The database now contains a statistically significant multi-class dataset ready for XGBoost training.
+
 ---
-*Version 4.0.0 | Signal Engine: Python AI | Last Updated: 09 March 2026*
+*Version 4.3.5 | Signal Engine: Normalized AI | Last Updated: 17 April 2026*
