@@ -543,9 +543,9 @@ This session provided critical "RSI normalization" data. The morning breakout at
 
 ### ML Training Spectrum Progress:
 
-| `0` (CE) | BUY CE | **13** (+2 today) |
-| `1` (PE) | BUY PE | **4** (+1 today) |
-| `2` (WAIT) | WAIT/AVOID/SIDEWAYS | ~980+ |
+| `0` (CE) | BUY CE | **14** (+1 today) |
+| `1` (PE) | BUY PE | **4** |
+| `2` (WAIT) | WAIT/AVOID/SIDEWAYS | ~1050+ |
 
 ---
 
@@ -574,6 +574,31 @@ The system hit a major milestone today: 15 sessions of continuous data extractio
 **Analysis:**
 The session provided a textbook "failed breakout" pattern. The 09:50 AM CE was strong (+40%), but the 11:45 AM PE capture saw an even stronger bearish follow-through (-49%). This gives the XGBoost model the exact telemetry needed to learn how to identify a "bull trap."
 
+---
+
+## Day 16 Audit: April 17, 2026 — 🎯 Technicals Overpower Option Chain
+The system successfully completed Day 16 with a unique display of conflicting indicators, capturing the nuance required for a high-grade ML classifier.
+
+**Volume & Consistency Update:**
+*   **Total Records Logged:** `83` responses.
+*   **Live Market Records:** `75` active session records.
+*   **Verdict:** 100% stable capture. No data gaps.
+
+**Signal Distribution Update:**
+*   **SIDEWAYS:** `40` records
+*   **WAIT:** `34` records
+*   **MARKET_CLOSED:** `8` records
+*   **BUY CE:** `1` record 🔥
+
+**Signal Deep Inspection:**
+
+| Time (IST) | Signal | Spot Price | RSI | Confidence |
+|------------|--------|------------|-----|------------|
+| 10:05 AM | BUY CE | ₹24,252.25 | 62.02 | +70.44% |
+
+**Analysis:**
+This signal generated a remarkable `+70.44%` confidence score **despite** the `writers_zone` returning a `BEARISH` classification. The XGBoost model now has textbook training data showing a scenario where strong structural momentum (`MACD`: 14.61, `ADX`: 26.98) legitimately overrides derivatives positioning data (Option writers). This type of nuanced feature-conflict is essential for teaching the AI not to blindly follow a single metric.
+
 | Day | Date | Dominant Signal | Market Character |
 |-----|------|-----------------|------------------|
 | 1 | Mar 24 | 46 AVOID, 29 WAIT | Mixed danger |
@@ -592,9 +617,10 @@ The session provided a textbook "failed breakout" pattern. The 09:50 AM CE was s
 | -- | Apr 14 | HOLIDAY | Market Closed (Ambedkar Jayanti) |
 | 14 | Apr 15 | 46 WAIT, 2 BUY CE | 🎯 RSI cooling on bullish hold |
 | 15 | Apr 16 | 57 WAIT, 2 BUY CE, 1 BUY PE | 🔥 Multi-class reversal (CE -> PE) |
+| 16 | Apr 17 | 40 SIDEWAYS, 34 WAIT, 1 BUY CE | 🎯 Technicals over Options Data |
 
 **Data Integrity Update:**
-A hard SQL check returned exactly `0` missing datapoints across all 64 columns.
+A hard SQL check returned exactly `0` missing datapoints across all 64 columns for the 16th consecutive session.
 
 ---
 

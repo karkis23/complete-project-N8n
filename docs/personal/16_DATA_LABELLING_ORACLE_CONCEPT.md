@@ -1,5 +1,5 @@
 # 16 — The ML Oracle: How We Label Data for XGBoost
-*Updated: March 26, 2026 (v4.3.0 Data Incubation Phase)*
+*Updated: April 18, 2026 (Oracle v2 — OHLC-Powered)*
 
 ---
 
@@ -36,7 +36,10 @@ To execute this, we will build an **Oracle Python Script** (e.g., `label_data.py
 
 ---
 
-## 3. The Labelling Logic (Step-by-Step Mathematics)
+## 3. The Labelling Logic (Oracle v2 — OHLC-Powered)
+
+> [!IMPORTANT]
+> **Major Update (April 2026)**: The Oracle has been upgraded from v1 (signal-based) to v2 (OHLC-based). v2 uses the `ohlc_candles` table with High/Low data for **precise first-hit detection**. See `docs/personal/ohlc_oracle_v2_breakdown.md` for the complete design.
 
 The `train_model.py` script specifically expects the `label` column to contain one of three integers for every single 5-minute tick:
 
@@ -44,32 +47,38 @@ The `train_model.py` script specifically expects the `label` column to contain o
 *   `1` = Correct action was **BUY PE** (Bearish breakdown happened)
 *   `2` = Correct action was **WAIT** (Market chopped, went sideways, or reversed and hit stop-loss)
 
-Here is the exact mathematical logic the Oracle Script will use to assign those numbers:
+### v2 Thresholds (Delta-Adjusted)
+Since we trade ATM options with Delta ≈ 0.5, the spot thresholds must account for the delta translation:
+
+| Parameter | Option Premium | NIFTY Spot Move |
+|---|---|---|
+| **CE Target** | +25 pts | Spot + **50 pts** |
+| **CE Stop Loss** | -15 pts | Spot − **30 pts** |
+| **PE Target** | +25 pts | Spot − **50 pts** |
+| **PE Stop Loss** | -15 pts | Spot + **30 pts** |
+| **Time Limit** | — | **60 minutes** (12 candles) |
 
 ### Step A: Lock the Anchor Price
-The script evaluates **Row A** (e.g., 10:00 AM). 
-*   **Anchor Price:** `spot_price` = `22,500`
+The script evaluates **Row A** (e.g., 10:00 AM). It finds the nearest `ohlc_candles` row to the signal timestamp.
+*   **Anchor Price:** `candle.close` = `22,500`
 
-### Step B: Define Target and Stop-Loss Limits
-Before looking forward, we define our strict risk-reward bounds. As officially mapped, we use the **Institutional Sweet Spot**:
-*   **Target (Take Profit):** `+35 points`
-*   **Maximum Risk (Stop Loss):** `-15 points`
-*   **Time Limit:** `60 minutes` (This equals scanning exactly 12 future candle rows)
+### Step B: Walk Forward Through OHLC Candles
+The script gets the next 12 candles (60 min) from `ohlc_candles` and checks **High and Low** in time order:
 
-### Step C: Look Forward in Time & Assign the Label
-The script scans the next 12 rows (from 10:05 AM to 11:00 AM) and checks what mathematically happened *first*:
+1.  **Scenario A (CE Win):** Does candle HIGH hit `22,550` (+50pts) BEFORE candle LOW drops to `22,470` (-30pts SL)?
+    *   **Result:** `label = 0`
+2.  **Scenario B (PE Win):** Does candle LOW hit `22,450` (-50pts) BEFORE candle HIGH rises to `22,530` (+30pts SL)?
+    *   **Result:** `label = 1`
+3.  **Scenario C (WAIT):** SL hit first, or 60 minutes expired without either target.
+    *   **Result:** `label = 2`
 
-1.  **Scenario A (The CE Win):** Did the spot price hit `22,535` (+35pts) BEFORE it dropped to `22,485` (-15pts SL)? 
-    *   **Result:** The market moved up cleanly.
-    *   **Oracle Action:** Updates Supabase and sets `label = 0`.
-2.  **Scenario B (The PE Win):** Did the spot price drop to `22,465` (-35pts) BEFORE it rose to `22,515` (+15pts SL)?
-    *   **Result:** The market crashed cleanly.
-    *   **Oracle Action:** Updates Supabase and sets `label = 1`.
-3.  **Scenario C (The Losers and Choppy Markets):** 
-    *   Did the Stop Loss get hit *before* either target?
-    *   Or did 60 minutes pass and the price just wandered sideways without cleanly hitting either 35pt target?
-    *   **Result:** It was a terrible, choppy, or dangerous time to trade.
-    *   **Oracle Action:** Updates Supabase and sets `label = 2`.
+### Why v2 Uses High/Low Instead of Close
+v1 only used `signals.spot_price` (a single close value). This missed intra-bar spikes:
+```
+Candle: Open=24100, High=24165, Low=24095, Close=24110
+v1 sees: 24110 (misses the +65pt spike to 24165)
+v2 sees: High=24165 (correctly detects CE target hit)
+```
 
 ---
 
@@ -93,19 +102,33 @@ The AI mathematically figures out the hidden correlations in those 57 features t
 
 ---
 
-## 5. Current State of the Database (Data Incubation Phase)
+## 5. Current State of the Database (April 2026)
 
-Following the v4.3.0 Live Database Audit, the `public.signals` table in Supabase is successfully ingesting the full 64-column feature matrix with 100% sync rate (0 missing metrics across GEX, PCR, IV Skew, etc.).
+Following the v5.1 OHLC-Enhanced upgrade, the system now has **two data sources**:
 
-However, if you inspect the schema today, you will notice the target columns sitting at the end of every row:
-*   `"label": null`
-*   `"label_source": null`
+### Signals Table (`public.signals`)
+- **1,306 rows** across 12 active trading days (Mar 24 – Apr 17, 2026)
+- Full 64-column feature matrix with 100% sync rate
+- `label` and `label_source` columns: **currently NULL** (awaiting Oracle v2 run)
 
-They are sitting dormant, intentionally waiting for Phase 3. 
+### OHLC Candles Table (`public.ohlc_candles`) — NEW
+- **975 candles** across 13 trading days (75 candles/day, exact 5-min intervals)
+- Raw High/Low/Open/Close/Volume from Angel One
+- **Automatic ingestion** via n8n (parallel to Python AI Engine call)
+- **30 days backfilled** via `api/scripts/backfill_ohlc.py`
 
-We are currently in the **Data Incubation Phase**. The system flawlessly logs ~75 live market snapshots daily. Once we collect 2-3 weeks of raw 64-column data, our very next action is executing the `label_data.py` script to automatically back-fill those empty columns using the forward-looking math described above. 
+### Simulated Oracle v2 Label Distribution
+Running the Oracle logic against the 975 OHLC candles produces:
 
-Only when those labels are populated based on *Absolute Market Reality* will the `ml_training_export` SQL View be passed into the XGBoost training algorithm.
+| Label | Count | Percentage |
+|---|---|---|
+| **0 (BUY CE)** | 307 | 37.5% |
+| **1 (BUY PE)** | 216 | 26.4% |
+| **2 (WAIT)** | 296 | 36.1% |
+
+This is far more balanced than the v1 prediction of ~80% WAIT, due to the extreme volatility of the current market period (avg daily range: 362 pts).
+
+Our next action is executing `oracle_labeler_v2.py` to populate the `label` column using the OHLC first-hit algorithm.
 
 ---
 

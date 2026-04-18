@@ -1,5 +1,5 @@
 # 07 — Continuous Retraining: Keeping the AI Sharp Over Time
-*Updated: March 2026 (v4.3.0 Supabase & GPU Architecture)*
+*Updated: April 18, 2026 (v5.1 OHLC-Enhanced Oracle v2)*
 
 ---
 
@@ -35,9 +35,10 @@ Even if you aggregate an enormous 500,000 rows of live Supabase data over the ne
 
 Here is the exact CI/CD (Continuous Integration) workflow for upgrading your AI's brain over the weekend:
 
-### Step 1: The Oracle Run (Friday Evening)
-* When the market closes, run the `label_data.py` Python script. 
-* The script connects to Supabase, finds all the unlabelled data from Monday to Friday, and mathematically calculates if those rows should be branded `0 (CE)`, `1 (PE)`, or `2 (WAIT)` based on your -15/+35 targets.
+### Step 1: The Oracle v2 Run (Friday Evening)
+* When the market closes, run `api/scripts/oracle_labeler_v2.py`.
+* The script connects to Supabase, JOINs `signals` to `ohlc_candles`, and uses the **OHLC High/Low first-hit detection** to label each row as `0 (CE)`, `1 (PE)`, or `2 (WAIT)` using delta-adjusted thresholds (±50/±30 pts in NIFTY spot).
+* This replaces the old `label_data.py` approach which only used `spot_price` (close only).
 
 ### Step 2: The Extraction (Saturday Morning)
 * Log into your Supabase dashboard and go to your `ml_training_export` SQL View.
