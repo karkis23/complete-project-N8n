@@ -284,6 +284,46 @@ export async function fetchTradeSummary(limit = 100): Promise<TradeSummary[]> {
     }));
 }
 
+export interface OHLCCandle {
+    id: string;
+    candleTime: string;
+    open: number;
+    high: number;
+    low: number;
+    close: number;
+    volume: number;
+    symbol: string;
+    timeframe: string;
+}
+
+export async function fetchOHLCCandles(limit = 1000): Promise<OHLCCandle[]> {
+    const { data, error } = await supabase
+        .from('ohlc_candles')
+        .select('*')
+        .order('candle_time', { ascending: false })
+        .limit(limit);
+
+    if (error) {
+        console.error('Error fetching OHLC candles from Supabase:', error);
+        return [];
+    }
+
+    // Sort ascending for chart rendering
+    const sortedData = (data || []).sort((a, b) => new Date(a.candle_time).getTime() - new Date(b.candle_time).getTime());
+
+    return sortedData.map(r => ({
+        id: r.id,
+        candleTime: r.candle_time,
+        open: Number(r.open),
+        high: Number(r.high),
+        low: Number(r.low),
+        close: Number(r.close),
+        volume: Number(r.volume || 0),
+        symbol: r.symbol,
+        timeframe: r.timeframe
+    }));
+}
+
 // ============================================================
 // HEALTH & MARKET DATA (Unchanged Logic, uses local/external API)
 // ============================================================

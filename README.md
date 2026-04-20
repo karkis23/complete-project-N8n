@@ -31,13 +31,33 @@ A high-fidelity simulation environment that uses a **Hybrid Execution Model**:
 - **Charts**: Recharts (High-performance SVG)
 - **Icons**: Lucide React
 
-## 📊 Database Schema (`public.signals`) — v5.0
-The signals table is fundamentally designed as an **ML Feature Store**. It captures exactly 64 data points every 5 minutes:
+## 📊 Database Schema — v5.1.1 (OHLC-Enhanced + Upsert)
+
+### `public.signals` — ML Feature Store
+Captures exactly 64 data points every 5 minutes:
 - **Metadata**: Core timestamps, session dates, execution processing time.
 - **Market Context**: Spot prices, VIX multipliers, and session progress.
 - **Technical Matrix (18 features)**: RSI, MACD, ADX, Momentum, Stochastic, CCI, MFI, Bollinger Bands.
 - **Derivatives & GEX (9 features)**: PCR, Gamma Exposure, IV Skew, Max Pain, GEX Regimes.
 - **Signal Logic**: Confidence, AI insights, reasons, and state/streak metrics.
+- **Oracle Labels**: `label` (0=CE, 1=PE, 2=WAIT) + `label_source` — populated by Oracle v2.
+
+### `public.ohlc_candles` — Raw Price Backbone (NEW: April 2026)
+Stores raw 5-minute OHLCV candle data from Angel One. Used for:
+- **Oracle Labeling**: High/Low of each candle enables precise first-hit detection.
+- **Model Retraining**: Recompute features from raw candles without needing live API calls.
+- **Backtesting**: Complete intra-bar price data for accurate strategy simulation.
+
+| Column | Type | Description |
+|---|---|---|
+| `candle_time` | TIMESTAMPTZ | Candle open time (PK with symbol+timeframe) |
+| `open/high/low/close` | DECIMAL | OHLC price data |
+| `volume` | DECIMAL | Bar volume |
+| `symbol` | TEXT | `NIFTY 50` |
+| `timeframe` | TEXT | `5min` |
+| `session_date` | DATE | Trading day (IST) |
+
+**Storage**: ~975 rows per 13 trading days. ~3.6 MB/year. Deduplication via UNIQUE constraint.
 
 ### Automated ML Pipeline (`ml_training_export`)
 The database contains a built-in SQL View that automatically structures the 64 columns into the exact **57 numeric features** required by the Python XGBoost engine (`train_model.py`), fully bypassing manual CSV data wrangling.
@@ -49,8 +69,24 @@ The database contains a built-in SQL View that automatically structures the 64 c
 
 ## 🤖 n8n Workflows (Production)
 The system relies on these two primary active workflows:
-- **LIVE TEST DATABASE** (`cVkMUvsXXmTKCc3t`): Handles live signal ingestion and Supabase persistence.
+- **LIVE TEST DATABASE** (`cVkMUvsXXmTKCc3t`): Handles live signal ingestion, Supabase persistence, **and OHLC candle storage** (40 nodes).
 - **excution (Archived)** (`E9VXtjxIzDOirmv3`): Manages order execution and broker connectivity.
+
+### OHLC Storage Pipeline (v5.1.1 — April 2026)
+The `Extract Latest Candle` code node handles both candle extraction AND Supabase upsert in a single step, then feeds data to the AI engine:
+```
+Option Chain Request1
+  └──→ Extract Latest Candle (extract + upsert via PostgREST)
+       └──→ 🧠 Call Python AI Engine   (signal generation)
+```
+Uses `Prefer: resolution=merge-duplicates` header for `ON CONFLICT DO UPDATE` — no duplicate key errors.
+
+## 🧪 Scripts
+| Script | Location | Purpose |
+|---|---|---|
+| `backfill_ohlc.py` | `api/scripts/` | Fetches 30 days of 5-min candles from Angel One → Supabase |
+| `train_model.py` | `api/scripts/` | XGBoost model training from labeled signals data |
+| `test_api.py` | `api/scripts/` | API endpoint testing |
 
 ---
 *Zenith — Advanced Trading Intelligence*

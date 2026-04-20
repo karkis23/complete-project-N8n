@@ -253,3 +253,43 @@ SELECT
 FROM signals s
 GROUP BY s.signal
 ORDER BY total_signals DESC;
+
+-- =============================================
+-- TABLE 4: ohlc_candles
+-- Stores raw 5-min OHLCV candle data from Angel One
+-- Used for: Oracle labeling, backtesting, model retraining
+-- =============================================
+CREATE TABLE IF NOT EXISTS ohlc_candles (
+  -- ── Identity ──
+  id              UUID          DEFAULT gen_random_uuid() PRIMARY KEY,
+
+  -- ── Candle Data ──
+  candle_time     TIMESTAMPTZ   NOT NULL,   -- Candle open timestamp (IST)
+  open            NUMERIC       NOT NULL,
+  high            NUMERIC       NOT NULL,
+  low             NUMERIC       NOT NULL,
+  close           NUMERIC       NOT NULL,
+  volume          NUMERIC       DEFAULT 0,
+
+  -- ── Meta ──
+  symbol          TEXT          DEFAULT 'NIFTY 50',
+  timeframe       TEXT          DEFAULT '5min',   -- For future MTF support
+  session_date    TEXT          NOT NULL,          -- e.g., "2026-04-18"
+
+  -- ── Data Quality ──
+  source          TEXT          DEFAULT 'angel_one',
+  ingested_at     TIMESTAMPTZ   DEFAULT NOW(),
+
+  -- ── Prevent Duplicates ──
+  UNIQUE(symbol, timeframe, candle_time)
+);
+
+-- Fast lookups by date and time range
+CREATE INDEX IF NOT EXISTS idx_ohlc_session ON ohlc_candles(session_date);
+CREATE INDEX IF NOT EXISTS idx_ohlc_time ON ohlc_candles(candle_time DESC);
+CREATE INDEX IF NOT EXISTS idx_ohlc_symbol_time ON ohlc_candles(symbol, candle_time DESC);
+
+-- RLS
+ALTER TABLE ohlc_candles ENABLE ROW LEVEL SECURITY;
+CREATE POLICY "Service role full access on ohlc_candles" ON ohlc_candles
+  FOR ALL USING (true) WITH CHECK (true);

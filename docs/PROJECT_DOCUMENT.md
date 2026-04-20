@@ -1,7 +1,7 @@
 # 📊 ZENITH: Complete System Technical Documentation
 
-> **Version:** 4.3.5 (Normalized Signal Labels & 1k Telemetry Milestone)
-> **Last Updated:** 17 April 2026
+> **Version:** 5.1.2 (Frontend UI Pagination Optimization)
+> **Last Updated:** 20 April 2026
 > **Aesthetic:** ZENITH Professional Midnight
 > **Core Guide:** [ZENITH_SYSTEM_HANDBOOK.md](./ZENITH_SYSTEM_HANDBOOK.md)
 > **Architecture Diagrams:** [diagram.md](./diagram.md)
@@ -808,6 +808,21 @@ Verified Status = TRUE                                          Verified Status 
 - **Fix:** Changed to `>= 0.3` and updated diagnostic messages to show actual confidence.
 - **Date:** 02 March 2026
 
+### Bug #14 — OHLC Duplicate Key Constraint Violation (v5.1.1 Fix)
+- **Problem:** The `Store OHLC to Supabase` Supabase node used `Operation: Create` (INSERT), which threw `duplicate key value violates unique constraint "ohlc_candles_symbol_timeframe_candle_time_key"` when re-running within the same 5-minute candle window.
+- **Root Cause:** The n8n Supabase node has no native `Upsert` operation — only Create (INSERT), which always fails on duplicate unique keys.
+- **Fix:** Merged `Extract Latest Candle` and `Store OHLC to Supabase` into a single Code node. The node now performs an HTTP POST directly to the Supabase PostgREST API with header `Prefer: resolution=merge-duplicates`, which translates to PostgreSQL `ON CONFLICT DO UPDATE`.
+- **Impact:** Node count reduced from 41 → 40. Duplicate candle timestamps are now silently updated instead of erroring. No schema changes required.
+- **Date:** 20 April 2026
+- **Status:** ✅ FIXED.
+
+### Bug #15 — Frontend UI DOM Overload (Browser Freeze) (v5.1.2 Fix)
+- **Problem:** The app became extremely slow/frozen when navigating to `SignalsPage`, `HistoryPage`, and `ValidationPage`.
+- **Root Cause:** React was attempting to render up to 20,000 DOM elements at once. The global `useTrading` database holds all rows in memory for quick backtest/statistics computations, but the UI tables had no limit on their internal `.map()` loops.
+- **Fix:** Implemented strict, local `<Virtual Pagination>` mechanisms using `.slice()` to only render a safe maximum of `50` rows per page with added `Previous/Next` controls across the heavy UI files.
+- **Date:** 20 April 2026
+- **Status:** ✅ FIXED.
+
 ---
 
 ---
@@ -1041,6 +1056,11 @@ Supabase replaced both Google Drive (for storage) and Google Sheets (for data lo
 ---
 
 ## 19. Version Changelog
+
+### v5.1.2 — 20 April 2026
+**Frontend Performance Optimization**
+- **DOM Overload Fixed:** Separated heavy global datasets (~20k rows needed for statistics calculations) from rendering logic in `SignalsPage`, `HistoryPage`, and `ValidationPage`.
+- **Virtual Pagination:** Built inline React component array `slice` slicing to only allow up to 50 items displayed sequentially via pagination controls.
 
 ### v4.3.1 — 28 March 2026
 **Security Hardening & Structural Cleanup**

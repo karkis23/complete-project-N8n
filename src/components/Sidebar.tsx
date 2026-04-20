@@ -44,13 +44,15 @@ const navGroups: { label: string; items: NavItem[] }[] = [
         items: [
             { to: '/', label: 'Dashboard', icon: LayoutDashboard },
             { to: '/workspace', label: 'Workspace', icon: LayoutDashboard, badge: 'PRO' },
+            { to: '/charts', label: 'Live Charts', icon: BarChart3, badge: 'NEW' },
             { to: '/signals', label: 'Market Signals', icon: Zap, badge: 'LIVE' },
         ]
     },
     {
         label: 'Portfolio',
         items: [
-            { to: '/trades', label: 'Positions', icon: Briefcase, counter: true },
+            { to: '/orders', label: 'Order Book', icon: Briefcase, counter: true },
+            { to: '/trades', label: 'Positions & PnL', icon: Briefcase },
             { to: '/history', label: 'Trade History', icon: Clock },
             { to: '/analytics', label: 'Analytics', icon: BarChart3 },
         ]

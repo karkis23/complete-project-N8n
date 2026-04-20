@@ -1,4 +1,4 @@
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import { Search, TrendingUp, TrendingDown, Clock, Download } from 'lucide-react';
 import { useTrading } from '../hooks/useTrading';
 
@@ -35,6 +35,8 @@ export default function HistoryPage() {
     const { tradeSummary, stats } = useTrading();
     const [search, setSearch] = useState('');
     const [filter, setFilter] = useState('ALL');
+    const [page, setPage] = useState(1);
+    const limit = 50;
 
     const allTrades = useMemo(() =>
         tradeSummary.filter(t => t.entryOrderId || t.tradingSymbol),
@@ -55,6 +57,13 @@ export default function HistoryPage() {
             (t.entryOrderId  || '').toLowerCase().includes(q);
         return ok && match;
     }), [allTrades, search, filter]);
+
+    useEffect(() => {
+        setPage(1);
+    }, [search, filter]);
+
+    const paginated = useMemo(() => filtered.slice((page - 1) * limit, page * limit), [filtered, page]);
+    const totalPages = Math.ceil(filtered.length / limit);
 
     const handleExport = () => {
         const rows = ['Time,Symbol,Side,Entry,Exit,P&L,Reason,Status',
@@ -171,7 +180,7 @@ export default function HistoryPage() {
                             </tr>
                         </thead>
                         <tbody>
-                            {filtered.map((t, i) => {
+                            {paginated.map((t, i) => {
                                 const isWin    = t.pnl > 0;
                                 const isActive = t.status === 'ACTIVE' || t.status === 'OPEN';
                                 const isCE     = t.signal?.includes('CE');
@@ -230,6 +239,25 @@ export default function HistoryPage() {
                     </table>
                 </div>
             </div>
+
+            {/* Pagination Controls */}
+            {totalPages > 1 && (
+                <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '16px', padding: '16px', marginTop: '10px' }}>
+                    <button 
+                        onClick={() => setPage(p => Math.max(1, p - 1))}
+                        disabled={page === 1}
+                        style={{ padding: '6px 14px', borderRadius: '4px', background: 'var(--bg-elevated)', color: page === 1 ? 'var(--text-3)' : 'var(--text-1)', border: '1px solid var(--border)', cursor: page === 1 ? 'not-allowed' : 'pointer', fontSize: '13px', fontWeight: 600 }}>
+                        Previous
+                    </button>
+                    <span style={{ fontSize: '13px', color: 'var(--text-2)', fontWeight: 500 }}>Page {page} of {totalPages}</span>
+                    <button 
+                        onClick={() => setPage(p => Math.min(totalPages, p + 1))}
+                        disabled={page === totalPages}
+                        style={{ padding: '6px 14px', borderRadius: '4px', background: 'var(--bg-elevated)', color: page === totalPages ? 'var(--text-3)' : 'var(--text-1)', border: '1px solid var(--border)', cursor: page === totalPages ? 'not-allowed' : 'pointer', fontSize: '13px', fontWeight: 600 }}>
+                        Next
+                    </button>
+                </div>
+            )}
 
         </div>
         </div>
