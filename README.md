@@ -31,7 +31,7 @@ A high-fidelity simulation environment that uses a **Hybrid Execution Model**:
 - **Charts**: Recharts (High-performance SVG)
 - **Icons**: Lucide React
 
-## 📊 Database Schema — v5.1 (OHLC-Enhanced)
+## 📊 Database Schema — v5.1.1 (OHLC-Enhanced + Upsert)
 
 ### `public.signals` — ML Feature Store
 Captures exactly 64 data points every 5 minutes:
@@ -69,17 +69,17 @@ The database contains a built-in SQL View that automatically structures the 64 c
 
 ## 🤖 n8n Workflows (Production)
 The system relies on these two primary active workflows:
-- **LIVE TEST DATABASE** (`cVkMUvsXXmTKCc3t`): Handles live signal ingestion, Supabase persistence, **and OHLC candle storage** (41 nodes).
+- **LIVE TEST DATABASE** (`cVkMUvsXXmTKCc3t`): Handles live signal ingestion, Supabase persistence, **and OHLC candle storage** (40 nodes).
 - **excution (Archived)** (`E9VXtjxIzDOirmv3`): Manages order execution and broker connectivity.
 
-### OHLC Storage Pipeline (Added April 2026)
-The workflow includes a **parallel branch** after `Option Chain Request1`:
+### OHLC Storage Pipeline (v5.1.1 — April 2026)
+The `Extract Latest Candle` code node handles both candle extraction AND Supabase upsert in a single step, then feeds data to the AI engine:
 ```
 Option Chain Request1
-  ├──→ 🧠 Call Python AI Engine   (signal generation)
-  └──→ Extract Latest Candle → Store OHLC to Supabase   (candle storage)
+  └──→ Extract Latest Candle (extract + upsert via PostgREST)
+       └──→ 🧠 Call Python AI Engine   (signal generation)
 ```
-Zero latency impact — runs in parallel with the AI engine call.
+Uses `Prefer: resolution=merge-duplicates` header for `ON CONFLICT DO UPDATE` — no duplicate key errors.
 
 ## 🧪 Scripts
 | Script | Location | Purpose |

@@ -99,3 +99,15 @@ export interface MarketData {
 
 export type SignalType = Signal['finalSignal'];
 export type TradeStatus = Trade['status'];
+
+export interface OHLCCandle {
+    id: string;
+    candleTime: string;
+    open: number;
+    high: number;
+    low: number;
+    close: number;
+    volume?: number;
+    symbol: string;
+    timeframe: string;
+}

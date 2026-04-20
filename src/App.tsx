@@ -14,6 +14,8 @@ import PythonEnginePage from './pages/PythonEnginePage';
 import XAIPage from './pages/XAIPage';
 import StrategyTuningPage from './pages/StrategyTuningPage';
 import WorkspacePage from './pages/WorkspacePage';
+import ChartsPage from './pages/ChartsPage';
+import OrdersPage from './pages/OrdersPage';
 import { useTrading } from './hooks/useTrading';
 import './index.css';
 
@@ -34,7 +36,9 @@ function useTheme() {
 const pageInfo: Record<string, { title: string; subtitle: string }> = {
   '/': { title: 'Dashboard', subtitle: 'Live performance and market operational metrics' },
   '/workspace': { title: 'Multi-Panel Workspace', subtitle: 'Customizable institutional-grade mission control center' },
+  '/charts': { title: 'Live Candlesticks', subtitle: 'Real-time OHLC price delivery & signals overlay' },
   '/signals': { title: 'Market Signals', subtitle: 'Real-time signal feed and decision logic' },
+  '/orders': { title: 'Order Book', subtitle: 'Active exit limit orders and stop-loss trailing' },
   '/trades': { title: 'Positions', subtitle: 'Active engagements and recently closed trades' },
   '/history': { title: 'Settled P&L', subtitle: 'Comprehensive ledger of historical performance' },
   '/analytics': { title: 'Deep Analytics', subtitle: 'Advanced statistical breakdown and strategy metrics' },
@@ -119,7 +123,9 @@ const AppContent: React.FC = () => {
           <Routes>
             <Route path="/" element={<DashboardPage />} />
             <Route path="/workspace" element={<WorkspacePage />} />
+            <Route path="/charts" element={<ChartsPage />} />
             <Route path="/signals" element={<SignalsPage />} />
+            <Route path="/orders" element={<OrdersPage />} />
             <Route path="/trades" element={<TradesPage />} />
             <Route path="/history" element={<HistoryPage />} />
             <Route path="/analytics" element={<AnalyticsPage />} />

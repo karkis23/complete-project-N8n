@@ -7,9 +7,9 @@
 
 import { useState, useEffect, useCallback, useRef } from 'react';
 import {
-    fetchSignals, fetchActiveTrades, fetchTradeSummary, fetchMarketData,
+    fetchSignals, fetchActiveTrades, fetchTradeSummary, fetchMarketData, fetchOHLCCandles,
     computeTradeStats, fetchEngineHealth,
-    type LiveSignal, type ActiveTrade, type TradeSummary,
+    type LiveSignal, type ActiveTrade, type TradeSummary, type OHLCCandle,
     type MarketSnapshot, type TradeStats, type EngineHealth
 } from '../services/supabaseApi';
 
@@ -28,6 +28,8 @@ export interface TradingState {
     marketData: MarketSnapshot | null; 
     /** Aggregated performance metrics (Win Rate, Total PnL, Profit Factor) */
     stats: TradeStats | null;      
+    /** OHLC Candle data */
+    candles: OHLCCandle[];
     /** Real-time operational health of the remote Python Engine cluster */
     engineHealth: EngineHealth | null; 
     /** UI loading state (true during fetch cycles) */
@@ -65,6 +67,7 @@ export function useTrading(): TradingState {
     const [tradeSummary, setTradeSummary] = useState<TradeSummary[]>([]);
     const [marketData, setMarketData] = useState<MarketSnapshot | null>(null);
     const [stats, setStats] = useState<TradeStats | null>(null);
+    const [candles, setCandles] = useState<OHLCCandle[]>([]);
     const [engineHealth, setEngineHealth] = useState<EngineHealth | null>(null);
     const [loading, setLoading] = useState(true);
     const [isPaused, setIsPaused] = useState(false);
@@ -82,10 +85,11 @@ export function useTrading(): TradingState {
             setError(null);
 
             // Fetch primary trade data in parallel
-            const [sigsResult, tradesResult, summaryResult] = await Promise.allSettled([
+            const [sigsResult, tradesResult, summaryResult, candlesResult] = await Promise.allSettled([
                 fetchSignals(20000), 
                 fetchActiveTrades(),
                 fetchTradeSummary(5000),
+                fetchOHLCCandles(1000), // Get last ~2 days of 5m candles
             ]);
 
             let latestSignals: LiveSignal[] = [];
@@ -97,6 +101,9 @@ export function useTrading(): TradingState {
             if (summaryResult.status === 'fulfilled') {
                 setTradeSummary(summaryResult.value);
                 setStats(computeTradeStats(summaryResult.value));
+            }
+            if (candlesResult.status === 'fulfilled') {
+                setCandles(candlesResult.value);
             }
 
             // Fetch secondary telemetry (Health & Market Snapshots)
@@ -149,7 +156,7 @@ export function useTrading(): TradingState {
     }, []);
 
     return {
-        signals, activeTrades, tradeSummary,
+        signals, activeTrades, tradeSummary, candles,
         marketData, stats, engineHealth,
         loading, error, lastRefresh,
         isLive: !!marketData?.marketOpen,

@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import { Search, ChevronRight, ChevronDown, TrendingUp, TrendingDown, ShieldAlert, Calendar } from 'lucide-react';
 import { useTrading } from '../hooks/useTrading';
 import { LogicTags } from './DashboardPage';
@@ -18,6 +18,9 @@ export default function SignalsPage() {
     const [dateRange, setDateRange] = useState({ start: '', end: '' });
     const [showDatePanel, setShowDatePanel] = useState(false);
 
+    const [page, setPage] = useState(1);
+    const limit = 50;
+
     const filtered = useMemo(() => signals.filter(s => {
         const f = filter === 'ALL' ? true
             : filter === 'CE' ? s.finalSignal.includes('CE')
@@ -36,6 +39,13 @@ export default function SignalsPage() {
 
         return f && m && inDate;
     }), [signals, filter, search, dateRange]);
+
+    useEffect(() => {
+        setPage(1);
+    }, [search, filter, dateRange]);
+
+    const paginated = useMemo(() => filtered.slice((page - 1) * limit, page * limit), [filtered, page]);
+    const totalPages = Math.ceil(filtered.length / limit);
 
     const counts = {
         all: signals.length,
@@ -165,7 +175,7 @@ export default function SignalsPage() {
                             </tr>
                         </thead>
                         <tbody>
-                            {filtered.map(s => (
+                            {paginated.map(s => (
                                 <React.Fragment key={s.id}>
                                     <tr onClick={() => setExpanded(expanded === s.id ? null : s.id)}
                                         style={{ cursor: 'pointer' }}>
@@ -320,6 +330,25 @@ export default function SignalsPage() {
                     </table>
                 </div>
             </div>
+
+            {/* Pagination Controls */}
+            {totalPages > 1 && (
+                <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '16px', padding: '16px', marginTop: '10px' }}>
+                    <button 
+                        onClick={() => setPage(p => Math.max(1, p - 1))}
+                        disabled={page === 1}
+                        style={{ padding: '6px 14px', borderRadius: '4px', background: 'var(--bg-elevated)', color: page === 1 ? 'var(--text-3)' : 'var(--text-1)', border: '1px solid var(--border)', cursor: page === 1 ? 'not-allowed' : 'pointer', fontSize: '13px', fontWeight: 600 }}>
+                        Previous
+                    </button>
+                    <span style={{ fontSize: '13px', color: 'var(--text-2)', fontWeight: 500 }}>Page {page} of {totalPages}</span>
+                    <button 
+                        onClick={() => setPage(p => Math.min(totalPages, p + 1))}
+                        disabled={page === totalPages}
+                        style={{ padding: '6px 14px', borderRadius: '4px', background: 'var(--bg-elevated)', color: page === totalPages ? 'var(--text-3)' : 'var(--text-1)', border: '1px solid var(--border)', cursor: page === totalPages ? 'not-allowed' : 'pointer', fontSize: '13px', fontWeight: 600 }}>
+                        Next
+                    </button>
+                </div>
+            )}
 
         </div>
         </div>
