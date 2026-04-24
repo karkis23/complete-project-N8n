@@ -63,54 +63,52 @@ export default function ValidationPage() {
 
             let comparePrice = 0;
             let priceSource: 'PENDING' | 'LIVE' | 'LOCKED' = 'PENDING';
+            
+            const isCE = s.finalSignal.includes('CE');
+            const isPE = s.finalSignal.includes('PE');
 
-            if (ageMinutes < 10) {
-                // PHASE 1: Awaiting price development
-                comparePrice = 0;
-                priceSource = 'PENDING';
-            } else if (ageMinutes < 30) {
-                // PHASE 2: Live tracking against current market
-                comparePrice = liveNifty;
-                priceSource = 'LIVE';
+            let lockedPrice = 0;
+            let foundLock = false;
+
+            // Target = 50 points, Stoploss = 30 points
+            for (const later of chronological) {
+                const laterMs = new Date(later.timestamp).getTime();
+                if (laterMs <= signalTimeMs) continue;
+
+                const laterPrice = later.spotPrice;
+                if (!laterPrice || laterPrice <= 0) continue;
+
+                const move = laterPrice - entry;
+
+                if (isCE) {
+                    if (move >= 50 || move <= -30) {
+                        lockedPrice = laterPrice;
+                        foundLock = true;
+                        break;
+                    }
+                } else if (isPE) {
+                    if (move <= -50 || move >= 30) {
+                        lockedPrice = laterPrice;
+                        foundLock = true;
+                        break;
+                    }
+                }
+
+                // Time exit at 15 minutes only for WAIT signals. 
+                // Active trades (CE/PE) stay open, checking every 5 mins until Target or SL is hit.
+                if (!isCE && !isPE && laterMs > signalTimeMs + 15 * 60000) {
+                    lockedPrice = laterPrice;
+                    foundLock = true;
+                    break;
+                }
+            }
+
+            if (foundLock) {
+                comparePrice = lockedPrice;
+                priceSource = 'LOCKED';
             } else {
-                // PHASE 3: Absolute locking via historical audit
-                const targetWindowStart = signalTimeMs + 10 * 60000;
-                const targetWindowEnd = signalTimeMs + 45 * 60000;
-
-                let bestMatch: typeof signals[0] | null = null;
-                let bestTimeDiff = Infinity;
-                let firstValidFallback: typeof signals[0] | null = null;
-
-                for (const later of chronological) {
-                    const laterMs = new Date(later.timestamp).getTime();
-                    if (laterMs <= signalTimeMs) continue;
-                    if (laterMs < targetWindowStart) continue;
-                    
-                    if (!firstValidFallback && later.spotPrice > 0) {
-                        firstValidFallback = later;
-                    }
-
-                    if (laterMs > targetWindowEnd) break;
-
-                    const idealTarget = signalTimeMs + 15 * 60000;
-                    const diff = Math.abs(laterMs - idealTarget);
-                    if (diff < bestTimeDiff && later.spotPrice > 0) {
-                        bestTimeDiff = diff;
-                        bestMatch = later;
-                    }
-                }
-
-                if (bestMatch && bestMatch.spotPrice > 0) {
-                    comparePrice = bestMatch.spotPrice;
-                    priceSource = 'LOCKED';
-                } else if (firstValidFallback && firstValidFallback.spotPrice > 0) {
-                    comparePrice = firstValidFallback.spotPrice;
-                    priceSource = 'LOCKED';
-                } else {
-                    // Fallback to live if no future signal data is available yet
-                    comparePrice = liveNifty;
-                    priceSource = liveNifty > 0 ? 'LIVE' : 'PENDING';
-                }
+                comparePrice = liveNifty;
+                priceSource = liveNifty > 0 ? 'LIVE' : 'PENDING';
             }
 
             const diff = comparePrice > 0 ? comparePrice - entry : 0;
@@ -118,9 +116,9 @@ export default function ValidationPage() {
 
             let status = 'PENDING';
             if (priceSource !== 'PENDING' && comparePrice > 0 && entry > 0) {
-                if (s.finalSignal.includes('CE')) {
+                if (isCE) {
                     status = diff > 0 ? 'CORRECT' : diff < 0 ? 'INCORRECT' : 'PENDING';
-                } else if (s.finalSignal.includes('PE')) {
+                } else if (isPE) {
                     status = diff < 0 ? 'CORRECT' : diff > 0 ? 'INCORRECT' : 'PENDING';
                 }
             }

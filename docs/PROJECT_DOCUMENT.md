@@ -634,7 +634,7 @@ Permanent PostgreSQL record of all completed trades.
 | `/history` | HistoryPage | Supabase: trades | Filter by WIN/LOSS/CE/PE/ACTIVE, search |
 | `/analytics` | AnalyticsPage | Supabase: trades | Bar chart, equity curve, exit pie, VIX buckets |
 | `/backtest` | BacktestPage | Supabase: signals + trades | **Strategy Tester**: Real-market verified backtesting |
-| `/validation` | ValidationPage | Supabase: signals | **Signal Audit**: Accuracy verification against live index |
+| `/validation` | ValidationPage | Supabase: signals | **Signal Audit**: Target/SL (50/30pt) accuracy verification against live index |
 | `/engine` | PythonEnginePage | localhost:8000/health | **Engine Telemetry**: Python API diagnostics & service health |
 | `/xai` | XAIPage | Supabase: signals | **AI Explainability**: Feature importance & model interpretation |
 | `/tuning` | StrategyTuningPage | Supabase: signals | **Strategy Tuning**: Dynamic parameter optimization |
@@ -1056,6 +1056,13 @@ Supabase replaced both Google Drive (for storage) and Google Sheets (for data lo
 ---
 
 ## 19. Version Changelog
+
+### v5.1.3 — 24 April 2026
+**Signal Audit Engine Overhaul**
+- **ValidationPage Logic Update:** Replaced arbitrary 45-minute time exits with a dynamic price-action tracking system.
+- **Target/SL Enforcement:** Active trades (BUY CE / BUY PE) are now evaluated using a strict **50-point Target** and **30-point Stoploss**.
+- **Continuous Scanning:** The audit engine scans every 5-minute interval until the trade mathematically resolves (hits Target or SL), rather than truncating at a specific time limit.
+- **WAIT Tracking:** WAIT signals use a 15-minute lookup to prove capital preservation value.
 
 ### v5.1.2 — 20 April 2026
 **Frontend Performance Optimization**

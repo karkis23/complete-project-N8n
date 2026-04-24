@@ -1,6 +1,6 @@
 # 🌌 ZENITH: System Handbook & Operational Standards
 
-> **System Version:** 4.2.0
+> **System Version:** 5.1.3
 > **Design Standard:** Zenith Professional Midnight
 > **Core Context:** Institutional Automated Market Analysis & Execution
 
@@ -31,7 +31,7 @@ The interface has been redesigned to reflect a sophisticated, distraction-free e
 3.  **Position Manager (Active Engagement):** Precise monitoring of capital currently exposed to market risk.
 4.  **Trade Ledger (History):** An immutable record of settled trades for end-of-day audit.
 5.  **Performance (Analytics):** Statistical breakdown of hit rates, profit factors, and equity curves.
-6.  **Signal Audit (Validation):** Real-time verification of signal accuracy against live index movements.
+6.  **Signal Audit (Validation):** Real-time verification of signal accuracy using a strict 50-point Target and 30-point Stoploss against live index movements.
 
 ---
 
